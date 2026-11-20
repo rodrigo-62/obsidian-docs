@@ -18,16 +18,16 @@ const threads: Threads = {
 		quote: 'A Short History of Lighthouses:',
 		created: '2026-11-13T14:13:00Z',
 		resolved: false,
-		comments: [{ id: 'a1', parent: null, created: '2026-11-13T14:13:00Z', body: 'Is the title too long? Maybe drop the subtitle' }],
+		comments: [{ id: 'a1', parent: null, created: '2026-11-13T14:13:00Z', body: 'Is the title too long? Maybe drop the subtitle…' }],
 	},
 	v8d2: {
 		quote: 'Light and Distance',
 		created: '2026-11-05T15:41:00Z',
 		resolved: false,
 		comments: [
-			{ id: 'a1', parent: null, created: '2026-11-05T15:41:00Z', body: 'The opening could say more about distance at sea' },
-			{ id: 'a2', parent: 'a1', created: '2026-11-13T14:33:00Z', body: '---\nOne idea: start with a ship' },
-			{ id: 'a3', parent: 'a1', created: '2026-11-13T17:15:00Z', body: '"a coastline that is obvious by day disappears at night"' },
+			{ id: 'a1', parent: null, created: '2026-11-05T15:41:00Z', body: 'The opening could say more…' },
+			{ id: 'a2', parent: 'a1', created: '2026-11-13T14:33:00Z', body: '---\nOne idea: start with a "ship"…' },
+			{ id: 'a3', parent: 'a1', created: '2026-11-13T17:15:00Z', body: '"a coastline that is obvious by day…"' },
 		],
 	},
 	res1: {
@@ -85,9 +85,9 @@ describe('exportForLLM — the spec example', () => {
 	});
 
 	it('writes threads with anchors, dates and reply-to', () => {
-		expect(text).toContain('<thread id="c1" status="open" anchor="A Short History of Lighthouses:">\n  <comment id="c1.1" date="2026-11-13 14:13">Is the title too long? Maybe drop the subtitle</comment>\n</thread>');
-		expect(text).toContain('<comment id="c2.2" date="2026-11-13 14:33">---\nOne idea: start with a ship</comment>');
-		expect(text).toContain('<comment id="c2.3" reply-to="c2.1" date="2026-11-13 17:15">"a coastline that is obvious by day disappears at night"</comment>');
+		expect(text).toContain('<thread id="c1" status="open" anchor="A Short History of Lighthouses:">\n  <comment id="c1.1" date="2026-11-13 14:13">Is the title too long? Maybe drop the subtitle…</comment>\n</thread>');
+		expect(text).toContain('<comment id="c2.2" date="2026-11-13 14:33">---\nOne idea: start with a "ship"…</comment>');
+		expect(text).toContain('<comment id="c2.3" reply-to="c2.1" date="2026-11-13 17:15">"a coastline that is obvious by day…"</comment>');
 		expect(text).not.toContain('id="c2.2" reply-to');
 	});
 
@@ -309,17 +309,17 @@ describe('frontmatter and summary', () => {
 
 describe('sample notes', () => {
 	it('essay exports cleanly', () => {
-		const md = vaultSrc('essay.md');
+		const md = vaultSrc('sample-essay.md');
 		const doc = store.read(md);
-		const { text, stats } = exportForLLM(md, doc.threads, { title: 'A Short History of Lighthouses' });
+		const { text, stats } = exportForLLM(md, doc.threads, { title: 'Sample essay' });
 		expect(text).not.toMatch(/<!--|​|folio/);
 		expect(stats).toMatchObject({ threads: 6, resolvedOmitted: 1 });
 		expect(text).toContain('<comment id="c2.3" reply-to="c2.1"');
 		expect(text).toContain('<comment id="c2.4" reply-to="c2.2"');
-		expect(text).toContain('> ⟦c4⟧A light that cannot be told apart.⟦/c4⟧');
+		expect(text).toContain('> ⟦c4⟧A light that cannot be told apart from the others is almost worse than no light.⟦/c4⟧');
 		expect(text).not.toContain('harbour records'); // private comment dropped
 		expect(text).toContain('receives.[^2]'); // inline footnote numbered by position
-		expect(text).toContain('morning.[^3]');
+		expect(text).toContain('every morning.[^3]');
 		expect(text).toMatch(/\[\^1\]: Coastal fires[^\n]*\n\[\^2\]: Some towers burned[^\n]*\n\[\^3\]: Cleaning mattered/);
 		// every milestone is balanced
 		for (let n = 1; n <= 6; n++) {

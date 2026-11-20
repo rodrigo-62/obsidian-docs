@@ -1,7 +1,7 @@
 ---
-folio: true
-folio-font: "Tinos"
-folio-font-size: 12
+docs: true
+docs-font: "Tinos"
+docs-font-size: 12
 ---
 
 # Footnotes and embeds
@@ -38,7 +38,7 @@ Some <!--c:fe1x-->commented text next to a footnote<!--/c:fe1x-->[^note].
 
     The second paragraph, indented to belong to the footnote.
 
-<!--folio:threads
+<!--docs:threads
 {
   "fe1x": {
     "quote": "commented text next to a footnote",

@@ -21,7 +21,7 @@ import {
 const T = (n: number) => `2026-11-1${n}T10:00:00Z`;
 
 function thread(): Thread {
-	let t = createThread('Light and Distance', 'The opening could say more about distance at sea', T(0));
+	let t = createThread('Light and Distance', 'The opening could say more about distance at sea.', T(0));
 	t = addReply(t, 'a1', 'Second thought', T(1)); // a2 -> a1 (direct above: no chip)
 	t = addReply(t, 'a2', 'Third, replying to second', T(2)); // a3 -> a2 (no chip)
 	t = addReply(t, 'a1', 'Back to the first', T(3)); // a4 -> a1 (chip)

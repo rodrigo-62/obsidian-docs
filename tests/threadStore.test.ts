@@ -15,8 +15,8 @@ const sample = (): Threads => ({
 		created: '2026-11-05T15:41:00Z',
 		resolved: false,
 		comments: [
-			{ id: 'a1', parent: null, created: '2026-11-05T15:41:00Z', body: 'The opening could say more about distance at sea' },
-			{ id: 'a2', parent: 'a1', created: '2026-11-13T14:33:00Z', body: '---\nOne idea: start with a ship' },
+			{ id: 'a1', parent: null, created: '2026-11-05T15:41:00Z', body: 'The opening could say more…' },
+			{ id: 'a2', parent: 'a1', created: '2026-11-13T14:33:00Z', body: '---\nOne idea: start with a "ship"…' },
 		],
 	},
 });
@@ -31,7 +31,7 @@ describe('threadStore', () => {
 
 	it('serialises one comment per line with stable key order', () => {
 		const json = serializeThreadJson(sample());
-		expect(json).toContain('\n      { "id": "a1", "parent": null, "created": "2026-11-05T15:41:00Z", "body": "The opening could say more about distance at sea" },\n');
+		expect(json).toContain('\n      { "id": "a1", "parent": null, "created": "2026-11-05T15:41:00Z", "body": "The opening could say more…" },\n');
 		expect(json.indexOf('"quote"')).toBeLessThan(json.indexOf('"created"'));
 		expect(JSON.parse(json)).toEqual(sample());
 	});

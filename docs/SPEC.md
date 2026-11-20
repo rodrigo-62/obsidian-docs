@@ -123,8 +123,8 @@ Comments are stored **inside the note**. They are portable, visible to agents an
     "created": "2026-11-05T15:41:00Z",
     "resolved": false,
     "comments": [
-      { "id": "a1", "parent": null, "created": "2026-11-05T15:41:00Z", "body": "The opening could say more about distance at sea" },
-      { "id": "a2", "parent": "a1", "created": "2026-11-13T14:33:00Z", "body": "---\nOne idea: start with a ship" }
+      { "id": "a1", "parent": null, "created": "2026-11-05T15:41:00Z", "body": "The opening could say more directly why distance matters…" },
+      { "id": "a2", "parent": "a1", "created": "2026-11-13T14:33:00Z", "body": "---\nOne idea: start with a ship approaching a dark coast…" }
     ]
   }
 }
@@ -159,7 +159,7 @@ Comments are stored **inside the note**. They are portable, visible to agents an
 
 **DECISION: store a tree, display it flat.**
 - Every comment has a `parent`. Linear is just one way of displaying a tree, so the data never limits us.
-- Default view: comments in time order. A reply whose parent is **not** the comment directly above it shows a small chip: `↳ re: "The opening could say more about distance at sea"`. Clicking the chip flashes the parent. This is the quoted-reply pattern from chat apps.
+- Default view: comments in time order. A reply whose parent is **not** the comment directly above it shows a small chip: `↳ re: "The opening could say more…"`. Clicking the chip flashes the parent. This is the quoted-reply pattern from chat apps.
 - Each thread has an optional **tree view** toggle with indentation capped at 2 levels and collapsible branches.
 - This gives Reddit's precision without the indentation cost.
 - Later idea (not v1): anchor a reply to a selected part of another comment.
@@ -199,7 +199,7 @@ Threads follow the document. Inside a thread, comments are in time order; reply-
 
 ## Introduction: ⟦c2⟧Light and Distance⟦/c2⟧
 
-For as long as ships have sailed there is a problem of distance. … which was arguably the late weakness of a fire on a hill[^1] …
+For as long as ships have sailed close to land, sailors have needed to know where the land ends. … a fire on a hill[^1] …
 </document>
 
 <footnotes>
@@ -208,13 +208,13 @@ For as long as ships have sailed there is a problem of distance. … which was a
 
 <comments>
 <thread id="c1" status="open" anchor="A Short History of Lighthouses:">
-  <comment id="c1.1" date="2026-11-13 14:13">Is the title too long? Maybe drop the subtitle</comment>
+  <comment id="c1.1" date="2026-11-13 14:13">Is the title too long? Maybe drop the subtitle…</comment>
 </thread>
 <thread id="c2" status="open" anchor="Light and Distance">
-  <comment id="c2.1" date="2026-11-05 15:41">The opening could say more about distance at sea</comment>
+  <comment id="c2.1" date="2026-11-05 15:41">The opening could say more directly why distance matters at sea…</comment>
   <comment id="c2.2" date="2026-11-13 14:33">---
-One idea: start with a ship</comment>
-  <comment id="c2.3" reply-to="c2.1" date="2026-11-13 17:15">"a coastline that is obvious by day disappears at night"</comment>
+One idea: start with a ship approaching a dark coast; …</comment>
+  <comment id="c2.3" reply-to="c2.1" date="2026-11-13 17:15">"a coastline that is obvious by day disappears at night" …</comment>
 </thread>
 </comments>
 ```

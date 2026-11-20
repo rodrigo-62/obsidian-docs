@@ -76,7 +76,7 @@ describe('inlineCommentStore', () => {
 
 describe('sample notes', () => {
 	it('essay: all threads anchored, in reading order, quotes match', () => {
-		const md = vaultSrc('essay.md');
+		const md = vaultSrc('sample-essay.md');
 		const doc = store.read(md);
 		expect(doc.ok).toBe(true);
 		expect(doc.anchored).toEqual(['k3f9', 'v8d2', 'm2p4', 'e7q1', 'q5b0', 'r4n6', 't1w3']);

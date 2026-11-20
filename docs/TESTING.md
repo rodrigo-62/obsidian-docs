@@ -22,14 +22,14 @@ No UI yet. This phase is covered by unit tests (`npm test`). Nothing to check by
 
 ## Phase 3: copy for LLM
 
-Open *Essays/A Short History of Lighthouses*. Paste results into any text editor to check them.
+Open *Essays/Sample essay*. Paste results into any text editor to check them.
 
 - [ ] A clipboard icon appears in the note's header (top-right). Click it. A notice says **"Copied: 6xx words, 6 threads (1 resolved omitted)"**.
-- [ ] The pasted text starts with `<document title="A Short History of Lighthouses">` and a `<notation>` block. The headings read `# ⟦c1⟧A Short History of Lighthouses:⟦/c1⟧ Light at the Edge of the Map`.
-- [ ] No `<!--`, no `folio` keys and no "Remember to cite the harbour records passage" (private comment) appear in the paste.
-- [ ] `<footnotes>` lists `[^1]`, `[^2]` (the inline one about *whale oil*) and `[^3]`, in that order.
+- [ ] The pasted text starts with `<document title="Sample essay">` and a `<notation>` block. The headings read `# ⟦c1⟧A Short History of Lighthouses:⟦/c1⟧ Light at the Edge of the Map`.
+- [ ] No `<!--`, no `folio` keys and no "Check the opening date against the harbour records" (private comment) appear in the paste.
+- [ ] `<footnotes>` lists `[^1]`, `[^2]` (the inline one about whale oil) and `[^3]`, in that order.
 - [ ] In `<comments>`, thread c2 has 4 comments; `c2.3` has `reply-to="c2.1"` and `c2.4` has `reply-to="c2.2"`. Dates are in your local time.
-- [ ] Command palette → **Folio: Copy for LLM including resolved comments**. Now 7 threads, and the "debt … sourced" thread has `status="resolved"`.
+- [ ] Command palette → **Folio: Copy for LLM including resolved comments**. Now 7 threads, and the "every few hours … Find a source" thread has `status="resolved"`.
 - [ ] Select a sentence → right-click → **Copy selection for LLM**. Only threads touching the selection are included, and the notation says it's an excerpt.
 - [ ] Command palette → **Folio: Copy for LLM (choose options)…**. A modal with Content / Selection / Resolved / Embeds / Private options appears, and **Copy** works.
 - [ ] Open *Footnotes and embeds* → Copy for LLM. The paste contains `<embed source="Embedded note">` with that note's text (no `<!--c:` markers), `<embed source="Embedded note#Second section">`, and `[image: diagram.png — A small test diagram]`.
@@ -59,14 +59,14 @@ Use *Comments without doc mode* and *Overlapping comments*, in Live Preview unle
 
 ## Phase 5: margin cards
 
-Make the Obsidian window wide (≥ 1100 px editor pane). Open *Essays/A Short History of Lighthouses* in Live Preview.
+Make the Obsidian window wide (≥ 1100 px editor pane). Open *Essays/Sample essay* in Live Preview.
 
 - [ ] Comment cards appear in a column **to the right of the text**, each roughly level with its highlighted text. The text column moves a little to the left to make room. Cards never overlap.
 - [ ] Scroll: the cards scroll together with the text, without lagging or jumping.
 - [ ] Hover a card: its highlight in the text gets stronger. Move away and it softens.
 - [ ] Click a card: its text is selected, the card gets a shadow and a coloured border and expands to show all comments plus a "Reply…" box. Cards above it shift up and cards below shift down, so the active card stays level with its text.
 - [ ] Click inside highlighted text in the editor: the matching card becomes active.
-- [ ] The "Light and Distance" card, when inactive, shows the first comment, "2 more replies" and the last reply. When active, it shows all 4. The third comment shows a chip **↳ re: "The opening could say more about distance at sea"**. Click the chip and the first comment flashes.
+- [ ] The "Light and Distance" card, when inactive, shows the first comment, "2 more replies" and the last reply. When active, it shows all 4. The third comment shows a chip **↳ re: "One idea: start with a ship…"** (on the 4th comment). Click the chip and the first comment flashes.
 - [ ] In that card, the second comment's `---` lines render as horizontal separators (not as a heading), and `**Check**` in the 4th comment is bold.
 - [ ] Type a reply and press Ctrl+Enter. It appears at the bottom of the card. In Source mode, the JSON at the end has a new line with `"parent": "a4"` (the last comment).
 - [ ] Hover a reply and click its ↩ icon. The reply box says "Replying to …". Send, and the new reply shows a ↳ re: chip if it isn't directly below its parent.
@@ -83,7 +83,7 @@ Make the Obsidian window wide (≥ 1100 px editor pane). Open *Essays/A Short Hi
 
 ## Phase 6: tree view, navigation, reading view
 
-- [ ] In *Essays/A Short History of Lighthouses*, activate the "Light and Distance" card and click the branch icon in its header. Replies indent under the comment they answer (a2 and a3 under a1, a4 under a2). Click ▾ next to a comment to collapse its branch ("▸ 1 reply"). Click the list icon to go back to time order.
+- [ ] In *Essays/Sample essay*, activate the "Light and Distance" card and click the branch icon in its header. Replies indent under the comment they answer (a2 and a3 under a1, a4 under a2). Click ▾ next to a comment to collapse its branch ("▸ 1 reply"). Click the list icon to go back to time order.
 - [ ] Settings → Folio → *Thread display: Tree*. New cards (e.g. after reopening the note) start in tree view.
 - [ ] Put the cursor at the top of the essay and press **Ctrl+Alt+.** repeatedly. Each press selects the next comment's text and activates its card, wrapping to the first after the last. **Ctrl+Alt+,** goes backwards.
 - [ ] With a card active, run **Folio: Reply to the active comment**. The cursor jumps into that card's reply box.
@@ -93,7 +93,7 @@ Make the Obsidian window wide (≥ 1100 px editor pane). Open *Essays/A Short Hi
 
 ## Phase 1: doc mode and page appearance
 
-- [ ] Open *Essays/A Short History of Lighthouses* (doc mode, light, Liberation Serif 13 pt). The note shows as a **white page with a soft shadow on a grey background**, centred, with a slim **toolbar** at the top: zoom 100%, font, `− 13 +`, width 42 em, a sun icon, then comment buttons and a **Copy for LLM** button.
+- [ ] Open *Essays/Sample essay* (doc mode, light, Liberation Serif 13 pt). The note shows as a **white page with a soft shadow on a grey background**, centred, with a slim **toolbar** at the top: zoom 100%, font, `− 13 +`, width 42 em, a sun icon, then comment buttons and a **Copy for LLM** button.
 - [ ] *Plain note* (no doc mode) looks completely normal and has no toolbar.
 - [ ] Zoom dropdown → 150%. Text **and** page width grow together, and the margin cards move with the text and stay aligned. Run `cat` on the file (or check Source mode): the frontmatter has `folio-zoom: 150`.
 - [ ] Hold **Ctrl+Alt** and scroll over the page. Zoom steps up and down smoothly, and the frontmatter updates shortly after you stop.

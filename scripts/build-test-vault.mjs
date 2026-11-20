@@ -16,7 +16,7 @@ const ZW = '​';
 
 const notes = {
 	'start.md': 'Start here.md',
-	'essay.md': 'Essays/A Short History of Lighthouses.md',
+	'sample-essay.md': 'Essays/Sample essay.md',
 	'overlap.md': 'Overlapping comments.md',
 	'footnotes.md': 'Footnotes and embeds.md',
 	'embedded.md': 'Embedded note.md',

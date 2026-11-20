@@ -14,3 +14,6 @@ test-vault/.obsidian/workspace-mobile.json
 result
 dist/
 .install-targets
+
+# Personal notes kept out of git (stay on disk)
+/test-vault/Essays/A Short History of Lighthouses.md

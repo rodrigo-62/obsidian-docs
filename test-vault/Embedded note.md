@@ -6,7 +6,7 @@ This note is embedded by "Footnotes and embeds". <!--c:em1b-->Its own comment ma
 
 Only this section is embedded the second time.
 
-<!--folio:threads
+<!--docs:threads
 {
   "em1b": {
     "quote": "Its own comment markers",

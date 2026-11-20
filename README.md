@@ -2,7 +2,7 @@
 
 A "Google Docs mode" for [Obsidian](https://obsidian.md): **margin comments** with replies, a **page view** with its own theme per note, and **Copy for LLM**, which hands a note, its comments and footnotes to an AI agent with nothing left implicit. Made for writing long-form text (essays, drafts) in Obsidian.
 
-![Comments in the margin, next to the text they refer to](docs/images/comments-light.png)
+![Comments in the margin, next to the text they refer to](docs/images/comments.png)
 
 ## Features
 
@@ -25,7 +25,7 @@ A "Google Docs mode" for [Obsidian](https://obsidian.md): **margin comments** wi
 - Options: include resolved threads, comments only, text only, or just the selection.
 
 ```text
-<document title="A Short History of Lighthouses">
+<document title="Sample essay">
 <notation>
 ⟦cN⟧…⟦/cN⟧ marks the exact text that comment thread cN refers to. Ranges may overlap or nest.
 …
@@ -37,15 +37,15 @@ A "Google Docs mode" for [Obsidian](https://obsidian.md): **margin comments** wi
 
 <comments>
 <thread id="c2" status="open" anchor="Light and Distance">
-  <comment id="c2.1" date="2026-11-05 15:41">The opening could say more about distance at sea</comment>
-  <comment id="c2.3" reply-to="c2.1" date="2026-11-13 17:15">"a coastline that is obvious by day disappears at night"</comment>
+  <comment id="c2.1" date="2026-11-05 15:41">The opening could say more directly why distance matters at sea.</comment>
+  <comment id="c2.3" reply-to="c2.1" date="2026-11-13 17:15">"a coastline that is obvious by day disappears at night" could be the first sentence.</comment>
 </thread>
 </comments>
 ```
 
 **Writing helpers:** *Insert footnote* (or jump between a footnote and its reference), *Go to next/previous heading*, *Go to next/previous comment*.
 
-![Paper dark theme, thread in tree view](docs/images/tree-dark.png)
+![Paper dark theme, thread in tree view](docs/images/tree-view.png)
 
 ## Suggested hotkeys
 

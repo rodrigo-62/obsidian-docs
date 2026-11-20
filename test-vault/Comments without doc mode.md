@@ -8,7 +8,7 @@ This note has **no** `folio: true` in its frontmatter, so it keeps the normal Ob
 
 ​<!--c:nd2c-->A second comment, at the start of a paragraph.<!--/c:nd2c--> It has a reply.
 
-<!--folio:threads
+<!--docs:threads
 {
   "nd1c": {
     "quote": "comment markers",

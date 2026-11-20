@@ -1,8 +1,8 @@
 ---
-folio: true
-folio-theme: dark
-folio-font-size: 12
-folio-width: 40
+docs: true
+docs-theme: dark
+docs-font-size: 12
+docs-width: 40
 ---
 
 # Overlapping, nested and tricky comments
@@ -48,7 +48,7 @@ This paragraph has a lone start marker <!--c:lone-->with no end marker, which th
 
 The thread "dt5k" below has no markers at all: it should appear under **Detached comments**.
 
-<!--folio:threads
+<!--docs:threads
 {
   "ov1a": {
     "quote": "Overlapping ranges are allowed: this sentence starts the first range, and this clause belongs to both ranges",
