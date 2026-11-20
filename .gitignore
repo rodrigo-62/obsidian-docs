@@ -18,3 +18,4 @@ dist/
 # Personal test notes stay out of git (only the sample essay is tracked)
 /test-vault/Essays/*
 !/test-vault/Essays/Sample essay.md
+/test-vault/.obsidian/themes/
