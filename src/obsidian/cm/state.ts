@@ -183,14 +183,17 @@ export function folioState(state: EditorState): FolioState | null {
 	return state.field(folioField, false) ?? null;
 }
 
-/** The innermost visible thread whose highlighted text contains `pos`. */
+/**
+ * The innermost visible thread whose highlighted text contains `pos` strictly
+ * inside it: a cursor sitting at the edge of a highlight doesn't activate it.
+ */
 export function threadAt(st: FolioState, pos: number): string | null {
 	let best: string | null = null;
 	let bestLen = Infinity;
 	for (const a of st.doc.markers.anchors.values()) {
 		const t = st.doc.threads[a.id];
 		if (!t || (t.resolved && !st.ui.showResolved)) continue;
-		if (a.textFrom <= pos && pos <= a.textTo && a.textTo - a.textFrom < bestLen) {
+		if (a.textFrom < pos && pos < a.textTo && a.textTo - a.textFrom < bestLen) {
 			best = a.id;
 			bestLen = a.textTo - a.textFrom;
 		}

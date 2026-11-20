@@ -1,13 +1,17 @@
 // A small text box for writing a comment: Ctrl/Cmd+Enter saves, Esc cancels.
 // Used inside margin cards and in a modal (narrow panes / sidebar mode).
 
-import { App, Modal } from 'obsidian';
+import { App, Modal, Scope } from 'obsidian';
 
 export interface ComposerOptions {
 	placeholder?: string;
 	initial?: string;
 	submitLabel?: string;
 	autofocus?: boolean;
+	/** Needed so Ctrl/Cmd+Enter and Esc win over Obsidian's own hotkeys (Mod+Enter = toggle checkbox). */
+	app?: App;
+	/** Number of text rows when idle (1 for the compact reply box). */
+	rows?: number;
 	onSubmit: (text: string) => void;
 	onCancel: () => void;
 }
@@ -20,7 +24,7 @@ export interface Composer {
 
 export function createComposer(parent: HTMLElement, opts: ComposerOptions): Composer {
 	const el = parent.createDiv({ cls: 'folio-composer' });
-	const textarea = el.createEl('textarea', { cls: 'folio-composer-input', attr: { rows: '2', placeholder: opts.placeholder ?? 'Comment…' } });
+	const textarea = el.createEl('textarea', { cls: 'folio-composer-input', attr: { rows: String(opts.rows ?? 2), placeholder: opts.placeholder ?? 'Comment…' } });
 	textarea.value = opts.initial ?? '';
 	const actions = el.createDiv({ cls: 'folio-composer-actions' });
 	const hint = actions.createSpan({ cls: 'folio-composer-hint', text: 'Ctrl+Enter to save · Esc to cancel' });
@@ -37,28 +41,62 @@ export function createComposer(parent: HTMLElement, opts: ComposerOptions): Comp
 		updateState();
 		el.toggleClass('has-text', textarea.value.trim() !== '');
 	});
+	const submitNow = () => {
+		if (textarea.value.trim()) opts.onSubmit(textarea.value);
+	};
+	const cancelNow = () => {
+		opts.onCancel();
+		el.removeClass('has-text');
+		// leave the box (Cancel button or Esc): nothing in it keeps focus
+		const active = document.activeElement;
+		if (active instanceof HTMLElement && el.contains(active)) active.blur();
+	};
 	textarea.addEventListener('keydown', (e) => {
 		if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
 			e.preventDefault();
 			e.stopPropagation();
-			if (textarea.value.trim()) opts.onSubmit(textarea.value);
+			submitNow();
 		} else if (e.key === 'Escape') {
 			e.preventDefault();
 			e.stopPropagation();
-			opts.onCancel();
+			cancelNow();
 		}
 	});
+	// Obsidian handles hotkeys before the textarea sees them; a scope pushed while
+	// the box has focus takes precedence over the app's hotkeys.
+	if (opts.app) {
+		const app = opts.app;
+		const scope = new Scope(app.scope);
+		scope.register(['Mod'], 'Enter', () => {
+			submitNow();
+			return false;
+		});
+		scope.register([], 'Escape', () => {
+			cancelNow();
+			return false;
+		});
+		let pushed = false;
+		textarea.addEventListener('focus', () => {
+			if (!pushed) app.keymap?.pushScope(scope);
+			pushed = true;
+		});
+		textarea.addEventListener('blur', () => {
+			if (pushed) app.keymap?.popScope(scope);
+			pushed = false;
+		});
+	}
 	submit.addEventListener('click', (e) => {
 		e.preventDefault();
-		if (textarea.value.trim()) opts.onSubmit(textarea.value);
+		submitNow();
 	});
 	cancel.addEventListener('click', (e) => {
 		e.preventDefault();
-		opts.onCancel();
+		cancelNow();
 	});
 	updateState();
 	const focus = () => {
-		textarea.focus();
+		// preventScroll: the card may not be positioned yet; scrolling to it would jump the page
+		textarea.focus({ preventScroll: true });
 		const n = textarea.value.length;
 		textarea.setSelectionRange(n, n);
 		grow();
@@ -86,6 +124,7 @@ export class ComposerModal extends Modal {
 		if (this.quote) this.contentEl.createDiv({ cls: 'folio-quote', text: this.quote });
 		createComposer(this.contentEl, {
 			...this.opts,
+			app: this.app,
 			autofocus: true,
 			onSubmit: (t) => {
 				this.submitted = true;

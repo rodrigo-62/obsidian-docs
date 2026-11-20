@@ -222,6 +222,7 @@ class MarginPlugin implements PluginValue {
 			placeholder: 'Comment…',
 			submitLabel: 'Comment',
 			autofocus: true,
+			app: this.ctx()?.app,
 			onSubmit: (text) => {
 				createComment(this.view, text);
 			},

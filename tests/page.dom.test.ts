@@ -76,7 +76,7 @@ describe('toolbar', () => {
 		(tb.el.querySelector('[aria-label="Increase font size"]') as HTMLElement).click();
 		(tb.el.querySelector('[aria-label^="Page theme"]') as HTMLElement).click();
 		(tb.el.querySelector('.folio-tb-copy') as HTMLElement).click();
-		expect(patches).toEqual([{ zoom: 150 }, { fontSize: 14 }, { theme: 'dark' }, { font: 'COPY' }]);
+		expect(patches).toEqual([{ zoom: 150 }, { fontSize: 14 }, { theme: 'sepia' }, { font: 'COPY' }]);
 		tb.destroy();
 		expect(el.querySelector('.folio-toolbar')).toBeNull();
 	});

@@ -64,6 +64,11 @@ export function installDomHelpers(): void {
 	P.isShown = function (this: HTMLElement) {
 		return this.style.display !== 'none';
 	};
+	(globalThis as Record<string, unknown>).createSpan = (o?: ElOpts) => {
+		const el = document.createElement('span');
+		applyOpts(el, o);
+		return el;
+	};
 	(globalThis as Record<string, unknown>).createDiv = (o?: ElOpts) => {
 		const el = document.createElement('div');
 		applyOpts(el, o);
@@ -181,8 +186,26 @@ export const editorInfoField = StateField.define<{ file: { path: string } | null
 });
 
 export class App {}
-export class MarkdownView {}
-export class ItemView {}
+export class Scope {
+	keys: { mods: string[] | null; key: string | null; fn: () => unknown }[] = [];
+	constructor(public parent?: unknown) {}
+	register(mods: string[] | null, key: string | null, fn: () => unknown) {
+		this.keys.push({ mods, key, fn });
+		return {};
+	}
+}
+export class MarkdownView {
+	file: { path: string; basename: string } | null = null;
+	editor: unknown = null;
+}
+export class ItemView {
+	app: unknown;
+	contentEl = document.createElement('div');
+	constructor(public leaf: { app?: unknown }) {
+		this.app = leaf.app ?? { workspace: { on: () => ({}) } };
+	}
+	registerEvent(): void {}
+}
 export class Plugin {}
 export class PluginSettingTab {}
 export class TFile {}

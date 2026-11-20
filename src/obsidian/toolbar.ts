@@ -49,9 +49,9 @@ class PromptModal extends Modal {
 	}
 }
 
-const THEME_ORDER: ThemeChoice[] = ['app', 'light', 'dark'];
-const THEME_LABEL: Record<ThemeChoice, string> = { app: 'Page theme: follow the app', light: 'Page theme: paper light', dark: 'Page theme: paper dark' };
-const THEME_ICON: Record<ThemeChoice, string> = { app: 'monitor', light: 'sun', dark: 'moon' };
+export const THEME_ORDER: ThemeChoice[] = ['app', 'light', 'sepia', 'dark'];
+const THEME_LABEL: Record<ThemeChoice, string> = { app: 'Page theme: follow the app', light: 'Page theme: paper light', sepia: 'Page theme: sepia', dark: 'Page theme: paper dark' };
+const THEME_ICON: Record<ThemeChoice, string> = { app: 'monitor', light: 'sun', sepia: 'coffee', dark: 'moon' };
 
 export class DocToolbar {
 	readonly el: HTMLElement;
@@ -128,9 +128,10 @@ export class DocToolbar {
 			window.setTimeout(() => this.render(), 50);
 		});
 		this.button(g5, 'messages-square', 'Comments sidebar').addEventListener('click', () => actions.openSidebar());
-		const copy = this.el.createEl('button', { cls: 'folio-tb-copy mod-cta', attr: { 'aria-label': 'Copy the note for an AI agent (Ctrl+Alt+C). Right-click for options.' } });
+		// "Copy" here: the toolbar has no plain copy, so it can't be confused with Ctrl+C.
+		const copy = this.el.createEl('button', { cls: 'folio-tb-copy mod-cta', attr: { 'aria-label': 'Copy for LLM: the note with its comments spelled out for an AI agent (Ctrl+Alt+C). Right-click for options.' } });
 		setIcon(copy.createSpan(), 'clipboard-copy');
-		copy.createSpan({ text: 'Copy for LLM' });
+		copy.createSpan({ text: 'Copy' });
 		copy.addEventListener('click', () => actions.copyForLLM());
 		copy.addEventListener('contextmenu', (e) => {
 			e.preventDefault();

@@ -68,6 +68,12 @@ export class CommentsSidebarView extends ItemView {
 		this.emptyEl = this.contentEl.createDiv({ cls: 'folio-sidebar-empty' });
 		this.listEl = this.contentEl.createDiv({ cls: 'folio-sidebar-list' });
 		this.detachedHeader = createDiv({ cls: 'folio-detached-header', text: 'Detached comments' });
+		// Follow the active note on our own too (in case the plugin's call races the view's creation).
+		this.registerEvent(
+			this.app.workspace.on('active-leaf-change', (leaf) => {
+				if (leaf?.view instanceof MarkdownView) this.setSource(leaf.view);
+			}),
+		);
 		this.setSource(this.plugin.lastMarkdownView());
 	}
 
@@ -97,6 +103,25 @@ export class CommentsSidebarView extends ItemView {
 	/** Re-render from the source editor's state. */
 	refresh(): void {
 		if (!this.listEl) return;
+		try {
+			this.render();
+		} catch (e) {
+			console.error('[folio] comments sidebar', e);
+			this.emptyEl.setText(`Folio could not show the comments: ${(e as Error).message}`);
+			this.emptyEl.show();
+		}
+	}
+
+	private render(): void {
+		// A missing or closed source: fall back to the most recent note.
+		if (!this.source || !this.source.file || !editorViewOf(this.source)) {
+			const v = this.plugin.lastMarkdownView();
+			if (v && v !== this.source) {
+				for (const c of this.cards.values()) c.destroy();
+				this.cards.clear();
+				this.source = v;
+			}
+		}
 		const cm = this.cm();
 		const st = cm?.state.field(folioField, false);
 		this.renderHeader();

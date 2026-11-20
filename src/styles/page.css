@@ -3,13 +3,16 @@
    element by pageStyle.ts. Never on body. */
 
 .view-content.folio-doc {
-	--folio-surround: var(--background-secondary);
+	/* "follow the app" theme; the paper themes set these inline (paperPalette.ts) */
+	--folio-surround: color-mix(in srgb, var(--background-primary), black 10%);
+	--folio-page-border: color-mix(in srgb, var(--text-normal) 18%, transparent);
 	--folio-page-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 4px 14px rgba(0, 0, 0, 0.06);
 	display: flex;
 	flex-direction: column;
 	background-color: var(--folio-surround);
 }
 .theme-dark .view-content.folio-doc:not(.folio-theme-light) {
+	--folio-surround: color-mix(in srgb, var(--background-primary), black 40%);
 	--folio-page-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 6px 18px rgba(0, 0, 0, 0.35);
 }
 .view-content.folio-doc > .markdown-source-view,
@@ -39,6 +42,7 @@
 	margin-right: auto;
 	padding: var(--folio-page-pad-y) var(--folio-page-pad-x) calc(var(--folio-page-pad-y) * 2);
 	background-color: var(--background-primary);
+	border: 1px solid var(--folio-page-border);
 	box-shadow: var(--folio-page-shadow);
 	border-radius: 2px;
 	margin-top: 12px;
@@ -114,8 +118,13 @@
 .folio-tb-zoom {
 	width: 76px;
 }
-.folio-tb-font {
-	max-width: 180px;
+.folio-toolbar select.dropdown.folio-tb-font {
+	max-width: 200px;
+	font-size: var(--font-ui-small);
+}
+.folio-tb-font option,
+.folio-tb-font optgroup {
+	font-size: var(--font-ui-medium);
 }
 .folio-tb-font.is-missing {
 	color: var(--text-error);

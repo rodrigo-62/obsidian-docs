@@ -65,10 +65,13 @@ export function commentsInTimeOrder(thread: Thread): Comment[] {
 		.map((x) => x.c);
 }
 
-/** The parent a plain "Reply" should use: the last comment in time order. */
+/**
+ * The parent a plain "Reply" uses: the thread's first comment, i.e. a reply to
+ * the thread as a whole (as in Google Docs). Replies to a specific comment are
+ * made explicitly with that comment's reply button.
+ */
 export function defaultReplyParent(thread: Thread): string | null {
-	const ordered = commentsInTimeOrder(thread);
-	return ordered.length ? (ordered[ordered.length - 1] as Comment).id : null;
+	return rootComment(thread)?.id ?? null;
 }
 
 export function addReply(thread: Thread, parentId: string | null, body: string, now: string = nowIso()): Thread {
@@ -135,14 +138,19 @@ export interface FlatItem {
 	chip: ParentChip | null;
 }
 
-/** Default display: time order, with parent chips where the reply structure isn't obvious. */
+/**
+ * Default display: time order, with a parent chip on a reply that answers a
+ * specific earlier comment other than the one directly above. Replies to the
+ * first comment are replies to the thread itself and get no chip.
+ */
 export function flatView(thread: Thread, chipLength = 40): FlatItem[] {
 	const ordered = commentsInTimeOrder(thread);
 	const byId = new Map(thread.comments.map((c) => [c.id, c]));
+	const rootId = rootComment(thread)?.id;
 	return ordered.map((comment, i) => {
 		const prev = i > 0 ? ordered[i - 1] : undefined;
 		let chip: ParentChip | null = null;
-		if (comment.parent !== null && (!prev || comment.parent !== prev.id)) {
+		if (comment.parent !== null && comment.parent !== rootId && (!prev || comment.parent !== prev.id)) {
 			const p = byId.get(comment.parent);
 			if (p) chip = { parentId: p.id, excerpt: excerpt(p.body, chipLength) };
 		}

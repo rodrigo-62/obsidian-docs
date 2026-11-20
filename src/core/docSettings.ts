@@ -1,6 +1,6 @@
 // Per-note doc-mode settings from frontmatter (SPEC §3, §4). Pure TypeScript.
 
-export type ThemeChoice = 'light' | 'dark' | 'app';
+export type ThemeChoice = 'light' | 'sepia' | 'dark' | 'app';
 
 export interface PageSettings {
 	/** Percent, 50–200. */
@@ -72,7 +72,7 @@ export function readDocSettings(fm: Record<string, unknown> | null | undefined, 
 	const size = num(f[KEYS.fontSize]);
 	const font = typeof f[KEYS.font] === 'string' ? (f[KEYS.font] as string).trim() : '';
 	const themeRaw = typeof f[KEYS.theme] === 'string' ? (f[KEYS.theme] as string).trim().toLowerCase() : '';
-	const theme: ThemeChoice = themeRaw === 'light' || themeRaw === 'dark' || themeRaw === 'app' ? themeRaw : defaults.theme;
+	const theme: ThemeChoice = themeRaw === 'light' || themeRaw === 'sepia' || themeRaw === 'dark' || themeRaw === 'app' ? themeRaw : defaults.theme;
 	return {
 		enabled: bool(f[KEYS.enabled]),
 		zoom: Math.round(clamp(zoom ?? defaults.zoom, LIMITS.zoom.min, LIMITS.zoom.max)),

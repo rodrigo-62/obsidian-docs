@@ -48,7 +48,9 @@ function setup(doc: string) {
 
 function noteWith(text: string, ids: string[]) {
 	let threads = Object.fromEntries(ids.map((id) => [id, createThread('q', 'Body of ' + id, '2026-11-20T10:00:00Z')]));
-	threads.b = threads.b ? addReply(addReply(threads.b, 'a1', 'second', '2026-11-20T11:00:00Z'), 'a1', 'third, to the first', '2026-11-20T12:00:00Z') : threads.b!;
+	threads.b = threads.b
+		? addReply(addReply(addReply(threads.b, 'a1', 'second', '2026-11-20T11:00:00Z'), 'a1', 'third, to the thread', '2026-11-20T12:00:00Z'), 'a2', 'fourth, to the second', '2026-11-20T13:00:00Z')
+		: threads.b!;
 	threads = Object.fromEntries(Object.entries(threads).filter(([, v]) => v));
 	return `${text}\n\n${serializeThreadBlock(threads)}\n`;
 }
@@ -71,13 +73,14 @@ describe('margin (happy-dom)', () => {
 		const card = () => layer().querySelector('[data-folio-id="b"]') as HTMLElement;
 		// inactive: first + last comment, "1 more reply" between
 		expect(card().querySelectorAll('.folio-comment').length).toBe(2);
-		expect(card().querySelector('.folio-more')!.textContent).toBe('1 more reply');
+		expect(card().querySelector('.folio-more')!.textContent).toBe('2 more replies');
 		view.dispatch({ effects: setActive.of('b') });
 		await tick();
 		expect(card().classList.contains('is-active')).toBe(true);
-		expect(card().querySelectorAll('.folio-comment').length).toBe(3);
-		const chip = card().querySelector('.folio-chip')!;
-		expect(chip.textContent).toBe('↳ re: “Body of b”');
+		expect(card().querySelectorAll('.folio-comment').length).toBe(4);
+		const chips = card().querySelectorAll('.folio-chip');
+		expect(chips.length).toBe(1);
+		expect(chips[0]!.textContent).toBe('↳ re: “second”');
 		// reply box visible when active
 		expect((card().querySelector('.folio-card-footer') as HTMLElement).style.display).toBe('');
 		view.destroy();
@@ -160,7 +163,7 @@ describe('margin (happy-dom)', () => {
 		await tick();
 		expect(card().classList.contains('is-tree')).toBe(true);
 		const rows = Array.from(card().querySelectorAll('.folio-tree-row')) as HTMLElement[];
-		expect(rows.map((r) => r.style.getPropertyValue('--folio-indent'))).toEqual(['0', '1', '1']);
+		expect(rows.map((r) => r.style.getPropertyValue('--folio-indent'))).toEqual(['0', '1', '2', '1']);
 		view.destroy();
 	});
 
@@ -188,5 +191,28 @@ describe('margin (happy-dom)', () => {
 		expect(view.state.doc.toString()).toBe('Hello');
 		expect(store.read(view.state.doc.toString()).anchored).toEqual([]);
 		view.destroy();
+	});
+});
+
+describe('composer keymap scope', () => {
+	it('registers Mod+Enter and Escape in a scope pushed while focused', async () => {
+		const { createComposer } = await import('../src/obsidian/composer');
+		const pushed: unknown[] = [];
+		const app = { scope: {}, keymap: { pushScope: (s: unknown) => pushed.push(s), popScope: (s: unknown) => pushed.splice(pushed.indexOf(s), 1) } };
+		let sent = '';
+		let cancelled = false;
+		const parent = document.createElement('div');
+		document.body.appendChild(parent);
+		const comp = createComposer(parent, { app: app as never, onSubmit: (t) => (sent = t), onCancel: () => (cancelled = true) });
+		comp.textarea.dispatchEvent(new Event('focus'));
+		expect(pushed.length).toBe(1);
+		const scope = pushed[0] as { keys: { mods: string[]; key: string; fn: () => unknown }[] };
+		comp.textarea.value = 'hello';
+		expect(scope.keys.find((k) => k.key === 'Enter' && k.mods[0] === 'Mod')!.fn()).toBe(false);
+		expect(sent).toBe('hello');
+		scope.keys.find((k) => k.key === 'Escape')!.fn();
+		expect(cancelled).toBe(true);
+		comp.textarea.dispatchEvent(new Event('blur'));
+		expect(pushed.length).toBe(0);
 	});
 });

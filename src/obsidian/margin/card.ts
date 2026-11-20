@@ -221,8 +221,10 @@ export class ThreadCard {
 				row.addClass('folio-tree-row');
 				row.toggleClass('is-indented', r.indent > 0);
 				if (r.childCount > 0 && !compact) {
-					const tog = row.createDiv({ cls: 'folio-tree-toggle', text: r.collapsed ? `▸ ${r.hiddenCount} repl${r.hiddenCount === 1 ? 'y' : 'ies'}` : '▾' });
-					row.prepend(tog);
+					const meta = row.querySelector<HTMLElement>(':scope > .folio-comment-meta')!;
+					const tog = createSpan({ cls: 'folio-tree-toggle', text: r.collapsed ? `▸ ${r.hiddenCount} repl${r.hiddenCount === 1 ? 'y' : 'ies'}` : '▾', attr: { 'aria-label': r.collapsed ? 'Show replies' : 'Hide replies' } });
+					const acts = meta.querySelector(':scope > .folio-comment-actions');
+					meta.insertBefore(tog, acts);
 					tog.addEventListener('click', (e) => {
 						e.stopPropagation();
 						if (this.collapsed.has(r.comment.id)) this.collapsed.delete(r.comment.id);
@@ -297,6 +299,7 @@ export class ThreadCard {
 				initial: c.body,
 				submitLabel: 'Save',
 				autofocus: true,
+				app: this.host.app,
 				onSubmit: (text) => {
 					this.editing = null;
 					if (text.trim() !== c.body.trim()) this.host.edit(this.id, c.id, text);
@@ -341,6 +344,8 @@ export class ThreadCard {
 			this.replyComposer = createComposer(this.footerEl, {
 				placeholder: 'Reply…',
 				submitLabel: 'Reply',
+				app: this.host.app,
+				rows: 1,
 				onSubmit: (text) => {
 					if (this.host.reply(this.id, this.replyTarget, text)) {
 						this.replyComposer!.textarea.value = '';
@@ -351,7 +356,7 @@ export class ThreadCard {
 				},
 				onCancel: () => {
 					this.replyComposer!.textarea.value = '';
-					this.replyComposer!.textarea.blur();
+					this.replyComposer!.textarea.style.height = '';
 					this.replyTarget = null;
 					this.updateReplyTarget();
 				},
@@ -407,10 +412,13 @@ export class ThreadCard {
 			window.setTimeout(() => this.flashComment(commentId, false), 50);
 			return;
 		}
-		row.removeClass('is-flashing');
+		// Own class name: Obsidian's .is-flashing uses mix-blend-mode, which hid the text in dark themes.
+		row.removeClass('folio-flash');
 		void row.offsetWidth; // restart the animation
-		row.addClass('is-flashing');
-		row.scrollIntoView({ block: 'nearest' });
+		row.addClass('folio-flash');
+		const done = () => row.removeClass('folio-flash');
+		row.addEventListener('animationend', done, { once: true });
+		window.setTimeout(done, 2000);
 	}
 
 	private rerender(): void {

@@ -77,15 +77,24 @@ describe('folioField', () => {
 		const st = s.field(folioField);
 		const inn = st.doc.markers.anchors.get('in')!;
 		expect(threadAt(st, inn.textFrom + 1)).toBe('in');
-		expect(threadAt(st, st.doc.markers.anchors.get('out')!.textFrom)).toBe('out');
+		expect(threadAt(st, st.doc.markers.anchors.get('out')!.textFrom + 1)).toBe('out');
+	});
+
+	it('does not activate a thread when the cursor is at the edge of its highlight', () => {
+		const s = mk(`a ${o('x')}bbb${c('x')} c`);
+		const st = s.field(folioField);
+		const a = st.doc.markers.anchors.get('x')!;
+		expect(threadAt(st, a.textFrom)).toBeNull();
+		expect(threadAt(st, a.textTo)).toBeNull();
+		expect(threadAt(st, a.textFrom + 1)).toBe('x');
 	});
 
 	it('hides resolved threads unless show-resolved is on', () => {
 		const t = threads('x');
 		t.x!.resolved = true;
-		const doc = `a ${o('x')}b${c('x')} c\n\n${serializeThreadBlock(t)}\n`;
+		const doc = `a ${o('x')}bbb${c('x')} c\n\n${serializeThreadBlock(t)}\n`;
 		const s = EditorState.create({ doc, extensions: [folioField] });
-		const pos = s.field(folioField).doc.markers.anchors.get('x')!.textFrom;
+		const pos = s.field(folioField).doc.markers.anchors.get('x')!.textFrom + 1;
 		expect(threadAt(s.field(folioField), pos)).toBeNull();
 		const s2 = apply(s, { effects: setShowResolved.of(true) });
 		expect(threadAt(s2.field(folioField), pos)).toBe('x');

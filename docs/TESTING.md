@@ -107,3 +107,20 @@ Make the Obsidian window wide (≥ 1100 px editor pane). Open *Essays/A Short Hi
 - [ ] Commands **Zoom in / Zoom out / Reset zoom (doc mode)** work and are greyed out for notes without doc mode.
 - [ ] Switch a doc-mode note to Reading view. It still looks like a page with the same font and width.
 - [ ] Disable the Folio plugin (Settings → Community plugins). All pages, toolbars, margins and header buttons disappear without reloading. Enable it again and they come back.
+
+## Feedback round 1
+
+- [ ] In a comment or reply box, **Ctrl+Enter** sends (no click needed). It does **not** toggle a checkbox in the note. **Esc** cancels, and so does the Cancel button; either way the box is cleared and loses focus.
+- [ ] The idle "Reply…" box is a single line with the placeholder vertically centred and no scrollbar.
+- [ ] Type a plain reply in a thread that already has replies. It shows **no** "↳ re:" chip. In tree view it sits one level under the first comment (no staircase). Use a reply's ↩ button and send: that reply shows a chip in flat view and nests under its target in tree view.
+- [ ] Click a "↳ re:" chip. The referenced comment flashes briefly and **stays visible** (also in a dark theme).
+- [ ] In tree view, ▾/▸ sits at the right end of the comment's date line. There is no empty line with a lone arrow.
+- [ ] Select text in the middle of a long note and press Ctrl+Alt+M. The page does **not** jump; the selection and the new comment card stay in view.
+- [ ] Put the cursor just before or just after a highlight (at its edge): the card does not activate. Move one character inside: it activates.
+- [ ] **Comments sidebar** button (toolbar or command): the sidebar lists the note's comments, with quotes. Switch notes: it follows. If it is ever blank, it should now show a message; tell me what it says.
+- [ ] The toolbar's main button reads **Copy**. The right-click editor menu still says "Copy for LLM".
+- [ ] **Ctrl+Alt+F** in a sentence inserts `[^n]` (next number) and moves the cursor to a new `[^n]: ` line at the end of the text (before the comments). Type the footnote and press Ctrl+Alt+F: back to just after `[^n]` in the sentence. Press again: back to the footnote. Check in Source mode that the definition is not inside the hidden comment block.
+- [ ] Toolbar theme button cycles monitor → sun → **coffee (sepia)** → moon. Sepia gives a warm paper page with dark-brown text.
+- [ ] Settings → Folio → **Page theme: Paper light / Sepia / Paper dark** sliders (page brightness, text brightness, surround contrast, warmth) change open pages live. The ↺ button resets a theme.
+- [ ] In the light theme, the area around the page is clearly greyer than the page, and the page has a thin border.
+- [ ] The font dropdown's list uses a larger font.

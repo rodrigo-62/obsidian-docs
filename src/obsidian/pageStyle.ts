@@ -4,13 +4,16 @@
 
 import type { MarkdownView } from 'obsidian';
 import { pageMetrics, type DocSettings } from '../core/docSettings';
+import { DEFAULT_TWEAKS, paperVars, type PaperKind, type ThemeTweak } from '../core/paperPalette';
 
-const CLASSES = ['folio-doc', 'folio-theme-light', 'folio-theme-dark'];
+const CLASSES = ['folio-doc', 'folio-theme-light', 'folio-theme-sepia', 'folio-theme-dark'];
+/** Palette variables set inline (cleared again with the rest). */
+const PALETTE_VARS = Object.keys(paperVars('light', DEFAULT_TWEAKS.light));
 const VARS = ['--folio-font-px', '--folio-page-width', '--folio-page-pad-x', '--folio-page-pad-y', '--font-preferred-size', '--file-line-width', '--font-text', '--folio-zoom'];
 
 const styled = new Set<HTMLElement>();
 
-export function applyPageStyle(view: MarkdownView, s: DocSettings | null): void {
+export function applyPageStyle(view: MarkdownView, s: DocSettings | null, tweaks: Record<PaperKind, ThemeTweak> = DEFAULT_TWEAKS): void {
 	const el = view.contentEl;
 	if (!s || !s.enabled) {
 		clearPageStyle(el);
@@ -18,8 +21,12 @@ export function applyPageStyle(view: MarkdownView, s: DocSettings | null): void 
 	}
 	const m = pageMetrics(s);
 	el.addClass('folio-doc');
-	el.toggleClass('folio-theme-light', s.theme === 'light');
+	// sepia uses the light palette rules, with its own colours on top
+	el.toggleClass('folio-theme-light', s.theme === 'light' || s.theme === 'sepia');
+	el.toggleClass('folio-theme-sepia', s.theme === 'sepia');
 	el.toggleClass('folio-theme-dark', s.theme === 'dark');
+	if (s.theme === 'app') for (const v of PALETTE_VARS) el.style.removeProperty(v);
+	else for (const [k, v] of Object.entries(paperVars(s.theme, tweaks[s.theme]))) el.style.setProperty(k, v);
 	el.style.setProperty('--folio-zoom', String(s.zoom / 100));
 	el.style.setProperty('--folio-font-px', `${m.fontPx}px`);
 	el.style.setProperty('--folio-page-width', `${m.widthPx}px`);
@@ -36,7 +43,7 @@ export function applyPageStyle(view: MarkdownView, s: DocSettings | null): void 
 export function clearPageStyle(el: HTMLElement): void {
 	if (!styled.has(el) && !el.hasClass('folio-doc')) return;
 	el.removeClass(...CLASSES);
-	for (const v of VARS) el.style.removeProperty(v);
+	for (const v of [...VARS, ...PALETTE_VARS]) el.style.removeProperty(v);
 	styled.delete(el);
 }
 

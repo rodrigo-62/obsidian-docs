@@ -243,7 +243,7 @@
 	0% { background-color: var(--folio-hl-bg-strong); }
 	100% { background-color: transparent; }
 }
-.folio-comment.is-flashing {
+.folio-comment.folio-flash {
 	animation: folio-row-flash 1.4s ease;
 	border-radius: 4px;
 }
@@ -264,11 +264,19 @@
 	margin-top: 2px;
 }
 .folio-tree-toggle {
+	margin-left: auto;
+	padding: 0 4px;
 	font-size: var(--font-ui-smaller);
 	color: var(--text-muted);
 	cursor: pointer;
-	float: right;
-	margin-left: 4px;
+	border-radius: 4px;
+}
+.folio-tree-toggle:hover {
+	color: var(--text-normal);
+	background: var(--background-modifier-hover);
+}
+.folio-tree-toggle + .folio-comment-actions {
+	margin-left: 0;
 }
 
 /* reply box */
@@ -286,9 +294,13 @@
 .folio-reply-composer:not(:focus-within):not(.has-text) .folio-composer-actions {
 	display: none;
 }
-.folio-reply-composer:not(:focus-within):not(.has-text) .folio-composer-input {
+.folio-reply-composer .folio-composer-input {
 	min-height: 0;
-	height: 2em;
+	padding: 5px 8px;
+	line-height: 1.4;
+}
+.folio-reply-composer:not(:focus-within):not(.has-text) .folio-composer-input {
+	overflow-y: hidden;
 }
 .folio-card .folio-composer-hint {
 	display: none;

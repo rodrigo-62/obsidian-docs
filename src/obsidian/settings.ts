@@ -1,6 +1,7 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
 import type FolioPlugin from './main';
 import { DEFAULT_DOC_SETTINGS, type ThemeChoice } from '../core/docSettings';
+import { DEFAULT_TWEAKS, TWEAK_LIMITS, clampTweak, type PaperKind, type ThemeTweak } from '../core/paperPalette';
 
 export interface FolioSettings {
 	// Page defaults (used when a note's frontmatter key is missing)
@@ -9,6 +10,8 @@ export interface FolioSettings {
 	defaultFont: string;
 	defaultFontSize: number;
 	defaultTheme: ThemeChoice;
+	/** Colour sliders for the paper themes. */
+	themeTweaks: Record<PaperKind, ThemeTweak>;
 	// Comments
 	marginWidth: number;
 	defaultThreadView: 'flat' | 'tree';
@@ -28,6 +31,7 @@ export const DEFAULT_SETTINGS: FolioSettings = {
 	defaultFont: DEFAULT_DOC_SETTINGS.font,
 	defaultFontSize: DEFAULT_DOC_SETTINGS.fontSize,
 	defaultTheme: DEFAULT_DOC_SETTINGS.theme,
+	themeTweaks: { light: { ...DEFAULT_TWEAKS.light }, sepia: { ...DEFAULT_TWEAKS.sepia }, dark: { ...DEFAULT_TWEAKS.dark } },
 	marginWidth: 300,
 	defaultThreadView: 'flat',
 	showResolved: false,
@@ -108,13 +112,15 @@ export class FolioSettingTab extends PluginSettingTab {
 			);
 		new Setting(containerEl).setName('Page theme').addDropdown((d) =>
 			d
-				.addOptions({ app: 'Follow the app', light: 'Paper light', dark: 'Paper dark' })
+				.addOptions({ app: 'Follow the app', light: 'Paper light', sepia: 'Sepia', dark: 'Paper dark' })
 				.setValue(s.defaultTheme)
 				.onChange(async (v) => {
 					s.defaultTheme = v as ThemeChoice;
 					await save();
 				}),
 		);
+		this.paperThemes(containerEl);
+
 		new Setting(containerEl)
 			.setName('Ctrl+Alt+scroll zooms')
 			.setDesc('In doc mode, hold Ctrl+Alt and scroll to change this note’s zoom.')
@@ -194,5 +200,48 @@ export class FolioSettingTab extends PluginSettingTab {
 					this.plugin.refreshAllViews();
 				}),
 			);
+	}
+
+	/** Sliders for the three paper themes (apply live to open pages). */
+	private paperThemes(containerEl: HTMLElement): void {
+		const s = this.plugin.settings;
+		const labels: Record<PaperKind, string> = { light: 'Paper light', sepia: 'Sepia', dark: 'Paper dark' };
+		const names: Record<keyof ThemeTweak, [string, string]> = {
+			page: ['Page brightness', 'Lightness of the page background.'],
+			text: ['Text brightness', 'Lightness of the text (low = darker).'],
+			surround: ['Surround contrast', 'How much darker the area around the page is.'],
+			warmth: ['Warmth (sepia)', '0 = neutral grey, higher = warmer, paper-like tones.'],
+		};
+		for (const kind of ['light', 'sepia', 'dark'] as PaperKind[]) {
+			new Setting(containerEl)
+				.setName(`Page theme: ${labels[kind]}`)
+				.setHeading()
+				.addExtraButton((b) =>
+					b
+						.setIcon('rotate-ccw')
+						.setTooltip('Reset this theme')
+						.onClick(async () => {
+							s.themeTweaks[kind] = { ...DEFAULT_TWEAKS[kind] };
+							await this.plugin.saveSettings();
+							this.display();
+						}),
+				);
+			for (const key of ['page', 'text', 'surround', 'warmth'] as (keyof ThemeTweak)[]) {
+				const [lo, hi] = TWEAK_LIMITS[kind][key];
+				new Setting(containerEl)
+					.setName(names[key][0])
+					.setDesc(names[key][1])
+					.addSlider((sl) =>
+						sl
+							.setLimits(lo, hi, 1)
+							.setValue(clampTweak(kind, s.themeTweaks[kind])[key])
+							.setDynamicTooltip()
+							.onChange(async (v) => {
+								s.themeTweaks[kind] = { ...clampTweak(kind, s.themeTweaks[kind]), [key]: v };
+								await this.plugin.saveSettings();
+							}),
+					);
+			}
+		}
 	}
 }

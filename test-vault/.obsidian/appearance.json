@@ -1,3 +1,6 @@
 {
-  "showRibbon": false
+  "showRibbon": false,
+  "theme": "obsidian",
+  "accentColor": "#c1afe9",
+  "cssTheme": "Vanilla AMOLED Color"
 }

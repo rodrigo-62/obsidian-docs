@@ -39,13 +39,13 @@ describe('model basics', () => {
 		expect(nextCommentId(t)).toBe('a5');
 	});
 
-	it('defaults a reply to the last comment', () => {
+	it('defaults a reply to the thread (its first comment)', () => {
 		const t = thread();
-		expect(defaultReplyParent(t)).toBe('a4');
+		expect(defaultReplyParent(t)).toBe('a1');
 		const t2 = addReply(t, null, 'plain reply', T(4));
-		expect(t2.comments.at(-1)!.parent).toBe('a4');
+		expect(t2.comments.at(-1)!.parent).toBe('a1');
 		const t3 = addReply(t, 'missing', 'bad parent', T(4));
-		expect(t3.comments.at(-1)!.parent).toBe('a4');
+		expect(t3.comments.at(-1)!.parent).toBe('a1');
 	});
 
 	it('edits a comment and records the edit time', () => {
@@ -79,10 +79,12 @@ describe('model basics', () => {
 });
 
 describe('flatView parent chips', () => {
-	it('shows a chip only when the parent is not the comment directly above', () => {
-		const items = flatView(thread());
-		expect(items.map((i) => i.chip?.parentId ?? null)).toEqual([null, null, null, 'a1']);
-		expect(items[3]!.chip!.excerpt).toBe('The opening could say more about distance at sea');
+	it('shows a chip only for replies to a non-first comment that is not directly above', () => {
+		let t = thread(); // a2->a1, a3->a2, a4->a1
+		t = addReply(t, 'a2', 'back to the second', T(5)); // a5->a2: chip
+		const items = flatView(t);
+		expect(items.map((i) => i.chip?.parentId ?? null)).toEqual([null, null, null, null, 'a2']);
+		expect(items[4]!.chip!.excerpt).toBe('Second thought');
 	});
 });
 

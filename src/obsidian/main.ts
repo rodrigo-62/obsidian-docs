@@ -1,5 +1,5 @@
 import { MarkdownView, Menu, Notice, Plugin, TFile, editorInfoField, type Editor, type MarkdownFileInfo } from 'obsidian';
-import type { EditorView } from '@codemirror/view';
+import { EditorView } from '@codemirror/view';
 import { DEFAULT_SETTINGS, FolioSettingTab, type FolioSettings } from './settings';
 import { CopyOptionsModal, copyForLLM, selectionOffsets } from './exportCommand';
 import { commentExtensions, editorViewOf, folioField } from './cm';
@@ -11,7 +11,9 @@ import { CommentsSidebarView, SIDEBAR_VIEW } from './sidebarView';
 import { clearReadingCache, makeReadingPostProcessor } from './reading';
 import { KEYS, readDocSettings, stepFontSize, stepZoom, toFrontmatter, type DocSettings, type PageSettings, type ThemeChoice } from '../core/docSettings';
 import { applyPageStyle, clearAllPageStyles } from './pageStyle';
-import { DocToolbar } from './toolbar';
+import { DocToolbar, THEME_ORDER } from './toolbar';
+import { clampTweak } from '../core/paperPalette';
+import { footnoteAction } from '../core/footnotes';
 
 export default class FolioPlugin extends Plugin {
 	settings!: FolioSettings;
@@ -118,6 +120,7 @@ export default class FolioPlugin extends Plugin {
 	}
 
 	async activateSidebar(): Promise<void> {
+		const source = this.lastMarkdownView();
 		let leaf = this.app.workspace.getLeavesOfType(SIDEBAR_VIEW)[0];
 		if (!leaf) {
 			const right = this.app.workspace.getRightLeaf(false);
@@ -126,7 +129,10 @@ export default class FolioPlugin extends Plugin {
 			leaf = right;
 		}
 		await this.app.workspace.revealLeaf(leaf);
-		this.sidebar()?.setSource(this.lastMarkdownView());
+		// Sidebar tabs restored from a saved layout are "deferred" until loaded (Obsidian 1.7+).
+		await (leaf as unknown as { loadIfDeferred?: () => Promise<void> }).loadIfDeferred?.();
+		const view = leaf.view;
+		if (view instanceof CommentsSidebarView) view.setSource(source);
 	}
 
 	/** Ask every margin to re-render (e.g. after a tree toggle from the sidebar). */
@@ -147,7 +153,14 @@ export default class FolioPlugin extends Plugin {
 	}
 
 	async loadSettings(): Promise<void> {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, (await this.loadData()) as Partial<FolioSettings> | null);
+		const data = ((await this.loadData()) ?? {}) as Partial<FolioSettings>;
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, data);
+		const t = data.themeTweaks;
+		this.settings.themeTweaks = {
+			light: clampTweak('light', t?.light),
+			sepia: clampTweak('sepia', t?.sepia),
+			dark: clampTweak('dark', t?.dark),
+		};
 	}
 
 	async saveSettings(): Promise<void> {
@@ -177,7 +190,7 @@ export default class FolioPlugin extends Plugin {
 	refreshView(view: MarkdownView): void {
 		this.syncHeaderButtons(view);
 		const s = view.file ? this.docSettings(view.file) : null;
-		applyPageStyle(view, s);
+		applyPageStyle(view, s, this.settings.themeTweaks);
 		this.syncToolbar(view, s);
 	}
 
@@ -289,10 +302,9 @@ export default class FolioPlugin extends Plugin {
 		this.addCommand({ id: 'font-smaller', name: 'Decrease font size (doc mode)', checkCallback: withFile(true, (f, s) => this.updateDocSettings(f, { fontSize: stepFontSize(s.fontSize, -1) }, 300)) });
 		this.addCommand({
 			id: 'cycle-page-theme',
-			name: 'Change page theme (app / light / dark)',
+			name: 'Change page theme (app / light / sepia / dark)',
 			checkCallback: withFile(true, (f, s) => {
-				const order: ThemeChoice[] = ['app', 'light', 'dark'];
-				this.updateDocSettings(f, { theme: order[(order.indexOf(s.theme) + 1) % 3] });
+				this.updateDocSettings(f, { theme: THEME_ORDER[(THEME_ORDER.indexOf(s.theme) + 1) % THEME_ORDER.length] });
 			}),
 		});
 	}
@@ -358,6 +370,32 @@ export default class FolioPlugin extends Plugin {
 		});
 	}
 
+	// --- Footnotes: insert / jump (Ctrl+Alt+F) ---------------------------------
+
+	/** Where to return from a definition, per editor: the reference we came from. */
+	private footnoteOrigin = new WeakMap<EditorView, { label: string; pos: number }>();
+
+	footnote(cm: EditorView): void {
+		const md = cm.state.doc.toString();
+		const head = cm.state.selection.main.head;
+		const a = footnoteAction(md, head);
+		const scroll = (pos: number) => EditorView.scrollIntoView(pos, { y: 'center' });
+		if (a.kind === 'toReference') {
+			// prefer the exact reference we came from, if it still points at this footnote
+			const o = this.footnoteOrigin.get(cm);
+			const ref = `[^${a.label}]`;
+			const pos = o && o.label === a.label && md.slice(o.pos - ref.length, o.pos) === ref ? o.pos : a.pos;
+			cm.dispatch({ selection: { anchor: pos }, effects: scroll(pos), userEvent: 'select' });
+		} else if (a.kind === 'toDefinition') {
+			this.footnoteOrigin.set(cm, { label: a.label, pos: a.refEnd });
+			cm.dispatch({ changes: a.changes, selection: { anchor: a.pos }, effects: scroll(a.pos), userEvent: 'select' });
+		} else {
+			this.footnoteOrigin.set(cm, { label: a.label, pos: a.refEnd });
+			cm.dispatch({ changes: a.changes, selection: { anchor: a.cursor }, effects: scroll(a.cursor), userEvent: 'input.footnote' });
+		}
+		cm.focus();
+	}
+
 	// --- Keyboard navigation (phase 6) -----------------------------------------
 
 	private registerNavigationCommands(): void {
@@ -367,6 +405,17 @@ export default class FolioPlugin extends Plugin {
 			if (!checking) fn(cm, ctx);
 			return true;
 		};
+		this.addCommand({
+			id: 'footnote',
+			name: 'Insert footnote, or jump between a footnote and its reference',
+			hotkeys: [{ modifiers: ['Mod', 'Alt'], key: 'f' }],
+			editorCheckCallback: (checking, _e, ctx) => {
+				const cm = ctx instanceof MarkdownView ? editorViewOf(ctx) : null;
+				if (!cm || !(ctx instanceof MarkdownView) || ctx.getMode() !== 'source') return false;
+				if (!checking) this.footnote(cm);
+				return true;
+			},
+		});
 		this.addCommand({
 			id: 'next-comment',
 			name: 'Go to next comment',
