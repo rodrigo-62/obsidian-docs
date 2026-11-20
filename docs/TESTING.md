@@ -35,3 +35,24 @@ Open *Essays/A Short History of Lighthouses*. Paste results into any text editor
 - [ ] Open *Footnotes and embeds* → Copy for LLM. The paste contains `<embed source="Embedded note">` with that note's text (no `<!--c:` markers), `<embed source="Embedded note#Second section">`, and `[image: diagram.png — A small test diagram]`.
 - [ ] **Ctrl+Alt+C** (default hotkey) also copies.
 - [ ] Settings → Folio → turn off *Header buttons*. The clipboard icon disappears from open notes.
+
+## Phase 4: editor integration
+
+Use *Comments without doc mode* and *Overlapping comments*, in Live Preview unless stated otherwise.
+
+- [ ] No `<!--c:…-->` markers and no `<!--folio:threads` block are visible anywhere, in Live Preview **and** Source mode (toggle with Ctrl+E). The note ends after its last paragraph (plus one empty line).
+- [ ] Commented text has a soft yellow highlight. In *Overlapping comments*, the middle clause of "Overlap" (in both ranges) is visibly darker, and so is the nested inner phrase.
+- [ ] The `html` code block and the inline code in "Code is ignored" show their `<!--c:zz99-->` text literally, with no highlight.
+- [ ] Click inside highlighted text. That highlight gets stronger with an underline (it is now "active"). Click plain text and it goes back to normal.
+- [ ] Arrow keys move over the hidden markers without getting "stuck" (one key press per visible character).
+- [ ] Put the cursor at the end of a highlighted word and type `xyz`. The new text is **not** highlighted. Same at the start of a highlight.
+- [ ] Put the cursor right after the start of a highlight (visually at its first letter) and press Backspace. The character *before* the highlight is deleted, and the highlight stays intact.
+- [ ] Select a phrase that starts before a highlight and ends inside it, then press Delete. The highlight shrinks but survives.
+- [ ] Select exactly a whole highlighted phrase and delete it. The highlight disappears. Ctrl+Z brings back the text *and* its highlight.
+- [ ] Select some text that includes a highlight and press Ctrl+C. Paste into another app: no `<!--` markers.
+- [ ] Ctrl+A then Delete in a test note. The text is gone. Switch to Source mode: still no thread block visible. Ctrl+Z restores everything.
+- [ ] Press Ctrl+End and type a letter. It appears at the end of the visible text, not after a hidden block.
+- [ ] In *Plain note*, select a word and press **Ctrl+Alt+M** (or right-click → *Add comment*, or the speech-bubble header button). A modal opens with the quote and a focused text box. Type something and press **Ctrl+Enter**: the word is now highlighted. (Phase 5 replaces the modal with a margin card.)
+- [ ] Start a comment, then press Esc in the modal. Nothing changes in the note (check Source mode).
+- [ ] Select text inside a code block and press Ctrl+Alt+M. A notice says comments can't start or end inside a code block.
+- [ ] Command palette → **Folio: Repair comment markers in this note** in *Overlapping comments*. The notice reports 1 removed marker (the lone `lone` start marker).

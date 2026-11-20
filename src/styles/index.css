@@ -1,1 +1,2 @@
-/* Folio styles */
+/* Folio styles (bundled by esbuild into styles.css) */
+@import './comments.css';

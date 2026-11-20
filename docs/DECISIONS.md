@@ -36,3 +36,16 @@ Decisions made autonomously where the spec said "confirm with me", "stop and ask
 - **D3.7 Commands and hotkeys.** *Copy for LLM* gets `Mod+Alt+C` by default. There are separate commands for the options modal, selection only, including resolved, comments only and text only. The editor context menu has *Copy for LLM* and, when text is selected, *Copy selection for LLM*. A header button (clipboard icon) appears on every note, controlled by a setting. The doc-mode toolbar adds the same button in Phase 1.
 - **D3.8 What gets exported** is the editor's current text (`view.getViewData()`), including unsaved edits. Defaults come from the plugin settings (include resolved: off, embeds: inline, private: off).
 - **D3.9** `minAppVersion` is 1.8.0 (it uses `Modal.setTitle` and the current `addAction`). You run 1.15.1.
+
+## Phase 4: editor integration
+
+- **D4.1 Full re-parse per document change.** `inlineCommentStore.read` takes about 1 ms on the 190k-character, 100-thread note (measured), so the StateField re-parses instead of mapping positions incrementally. That makes the code simpler and less error-prone. Thread objects are reused while the JSON block text is unchanged.
+- **D4.2 Markers hidden in both Live Preview and Source mode** (replace decorations plus `atomicRanges`). The raw markers are only visible if you open the file elsewhere.
+- **D4.3 ⚠ What is hidden at the end.** The hidden range is `"\n<!--folio:threads…-->"` to the end of the file. The blank line *before* the block stays visible as an empty last line, so pressing Enter or typing at the end of the note behaves normally. Text typed after the block is moved in front of it. Deletions can't reach into it (Select all + Delete keeps the block and detaches all threads, and Undo brings everything back). A missing blank line before the block is restored on the next comment write.
+- **D4.4 Undo.** Comment writes are ordinary editor transactions, so **Ctrl+Z in the editor also undoes comment actions** (create, reply, resolve…), in order. This is deliberate. Keeping thread-block edits out of the history would let a later undo replay a stale block and corrupt the JSON.
+- **D4.5 Copy/cut** strip markers (and the hidden block) only when the selection touches one. Otherwise the default handler runs.
+- **D4.6 IME safety.** While composing (`input.type.compose`), insertion positions are not moved.
+- **D4.7 No selection.** *Add comment* with an empty selection comments on the word at the cursor (Google Docs does the same).
+- **D4.8 Activation.** Moving the cursor (click or keyboard) into commented text activates its innermost thread. Leaving it deactivates.
+- **D4.9 Orphan quotes** are refreshed on every comment write, not at the moment the text is deleted. A thread orphaned by deleting edited text keeps the quote from its last write. Updating the quote mid-edit would mean rewriting the thread block on ordinary keystrokes.
+- **D4.10 Interim composer.** Until the margin exists (Phase 5), *Add comment* opens a small modal (Ctrl+Enter saves, Esc cancels, empty = nothing). The modal stays as the fallback when there is no room for the margin.

@@ -192,7 +192,9 @@ export function planThreadWrite(md: string, threads: Threads, existing: ThreadBl
 	}
 	const block = serializeThreadBlock(threads);
 	if (!existing.trailing) {
-		return [{ from: existing.from, to: existing.to, insert: block }];
+		// Keep one blank line between the text and the block.
+		const needsBlank = existing.from > 1 && md[existing.from - 2] !== '\n';
+		return [{ from: existing.from, to: existing.to, insert: (needsBlank ? '\n' : '') + block }];
 	}
 	// Move the block to the end of the file.
 	let removeTo = existing.to;

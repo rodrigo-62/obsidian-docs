@@ -1,0 +1,98 @@
+/* ---- Comment highlights (editor) ------------------------------------- */
+body {
+	--folio-hl-bg: rgba(255, 210, 0, 0.26);
+	--folio-hl-bg-strong: rgba(255, 186, 0, 0.55);
+	--folio-hl-line: rgba(220, 160, 0, 0.95);
+	--folio-hl-draft: rgba(80, 140, 255, 0.25);
+	--folio-hl-resolved: rgba(128, 128, 128, 0.18);
+}
+body.theme-dark {
+	--folio-hl-bg: rgba(255, 205, 60, 0.17);
+	--folio-hl-bg-strong: rgba(255, 200, 60, 0.42);
+	--folio-hl-line: rgba(255, 205, 60, 0.85);
+	--folio-hl-draft: rgba(100, 160, 255, 0.28);
+	--folio-hl-resolved: rgba(160, 160, 160, 0.16);
+}
+
+/* Nested/overlapping marks stack their translucent backgrounds, so overlaps look darker. */
+.folio-hl {
+	background-color: var(--folio-hl-bg);
+	border-radius: 2px;
+	transition: background-color 120ms ease;
+}
+.folio-hl.folio-hl-active,
+.folio-hl.folio-hl-hover {
+	background-color: var(--folio-hl-bg-strong);
+	box-shadow: 0 2px 0 var(--folio-hl-line);
+}
+.folio-hl.folio-hl-resolved {
+	background-color: var(--folio-hl-resolved);
+	box-shadow: none;
+	text-decoration: underline dotted var(--text-faint);
+}
+.folio-hl.folio-hl-resolved.folio-hl-active {
+	background-color: var(--folio-hl-bg);
+}
+.folio-hl.folio-hl-draft {
+	background-color: var(--folio-hl-draft);
+}
+@keyframes folio-flash {
+	0%, 100% { background-color: var(--folio-hl-bg-strong); }
+	50% { background-color: transparent; }
+}
+@keyframes folio-flash2 {
+	0%, 100% { background-color: var(--folio-hl-bg-strong); }
+	50% { background-color: transparent; }
+}
+.folio-hl.folio-hl-flash { animation: folio-flash 0.3s ease 3; }
+.folio-hl.folio-hl-flash2 { animation: folio-flash2 0.3s ease 3; }
+
+.folio-hidden-block {
+	display: none;
+}
+
+/* ---- Composer ----------------------------------------------------------- */
+.folio-composer {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+.folio-composer-input {
+	width: 100%;
+	min-height: 2.6em;
+	resize: none;
+	font-family: var(--font-interface);
+	font-size: var(--font-ui-small);
+	line-height: 1.4;
+	padding: 6px 8px;
+	border-radius: var(--radius-s);
+}
+.folio-composer-actions {
+	display: flex;
+	gap: 6px;
+	align-items: center;
+	justify-content: flex-end;
+}
+.folio-composer-hint {
+	margin-right: auto;
+	font-size: var(--font-ui-smaller);
+	color: var(--text-faint);
+}
+.folio-btn.is-disabled {
+	opacity: 0.5;
+	pointer-events: none;
+}
+.folio-composer-modal .folio-quote {
+	border-left: 3px solid var(--folio-hl-line);
+	padding: 4px 10px;
+	margin-bottom: 10px;
+	color: var(--text-muted);
+	font-style: italic;
+	white-space: pre-wrap;
+	max-height: 8em;
+	overflow: auto;
+}
+.folio-composer-modal .folio-composer-input {
+	min-height: 6em;
+	font-size: var(--font-ui-medium);
+}

@@ -116,6 +116,11 @@ describe('threadStore', () => {
 			expect(out.startsWith('Hello\n\n<!--folio:threads')).toBe(true);
 		});
 
+		it('restores the blank line before the block', () => {
+			const md = 'Hello\ntyped\n' + serializeThreadBlock(sample()) + '\n';
+			expect(applyChanges(md, planThreadWrite(md, sample())).startsWith('Hello\ntyped\n\n<!--folio:threads')).toBe(true);
+		});
+
 		it('removes the block when no threads remain', () => {
 			const md = 'Hello\n\n' + serializeThreadBlock(sample()) + '\n';
 			expect(applyChanges(md, planThreadWrite(md, {}))).toBe('Hello\n');

@@ -27,5 +27,5 @@
 
 ## Current status / next step
 
-- **Done:** Phase 0 (setup, research, test vault). Phase 2 (core: `mdScan.ts`, `markers.ts`, `threadStore.ts`, `model.ts`, `commentStore.ts` façade). Phase 3 (`core/export.ts`, `core/docSettings.ts`; `obsidian/exportCommand.ts`, commands, editor menu, header button, settings tab). 126 tests.
-- **Next:** Phase 4 (editor integration in `src/obsidian/cm/`: StateField over `inlineCommentStore.read`, hidden atomic markers, highlights, boundary/deletion transaction filter using `adjustInsertionPos`/`adjustDeletions`, clipboard stripping, paste sanitising, hidden thread block, create-comment command `Ctrl+Alt+M` with a draft card).
+- **Done:** Phases 0, 2, 3, 4. Phase 4 = `src/obsidian/cm/` (state field, decorations, atomic ranges, edit filter, clipboard), `commentOps.ts` (all writes), `composer.ts` (textarea plus modal). Headless CM tests in `tests/cm.test.ts`. 147 tests.
+- **Next:** Phase 5 (margin cards in `src/obsidian/margin/`: ViewPlugin layer inside `.cm-scroller`, pure layout algorithm in `core/layout.ts`, cards with replies and parent chips, edit/delete/resolve, show resolved, detached section, draft card replacing the modal, narrow-pane sidebar `ItemView`).
