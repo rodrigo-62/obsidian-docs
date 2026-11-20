@@ -26,7 +26,7 @@
 	pointer-events: auto;
 	/* cards glide to their places and never overlap (the layout keeps gaps). Positioned with
 	   `top` rather than a transform, so the text stays as crisp as the page's. */
-	transition: top 240ms cubic-bezier(0.22, 0.8, 0.25, 1), left 180ms ease, right 180ms ease, box-shadow 180ms ease;
+	transition: top 140ms cubic-bezier(0.22, 0.8, 0.25, 1), left 100ms ease, right 100ms ease, box-shadow 100ms ease;
 }
 
 .folio-detached-header {

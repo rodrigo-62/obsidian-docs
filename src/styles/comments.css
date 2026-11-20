@@ -8,9 +8,9 @@ body {
 	--folio-active-outline: color-mix(in srgb, var(--folio-hl-line) 60%, transparent);
 }
 body.theme-dark {
-	--folio-hl-bg: rgba(255, 205, 60, 0.17);
-	--folio-hl-bg-strong: rgba(255, 200, 60, 0.42);
-	--folio-hl-line: rgba(255, 205, 60, 0.85);
+	--folio-hl-bg: rgba(255, 205, 60, 0.24);
+	--folio-hl-bg-strong: rgba(255, 200, 60, 0.5);
+	--folio-hl-line: rgba(255, 205, 60, 0.9);
 	--folio-hl-draft: rgba(100, 160, 255, 0.28);
 	--folio-hl-resolved: rgba(160, 160, 160, 0.16);
 	/* softer, more pastel outline for the active card on dark backgrounds */
@@ -21,7 +21,7 @@ body.theme-dark {
 .folio-hl {
 	background-color: var(--folio-hl-bg);
 	border-radius: 2px;
-	transition: background-color 120ms ease;
+	transition: background-color 80ms ease;
 }
 .folio-hl.folio-hl-active,
 .folio-hl.folio-hl-hover {

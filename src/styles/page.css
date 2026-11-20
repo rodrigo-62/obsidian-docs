@@ -91,9 +91,9 @@
 }
 .view-content.folio-theme-dark {
 	--folio-active-outline: color-mix(in srgb, rgb(240, 215, 150) 38%, transparent);
-	--folio-hl-bg: rgba(255, 205, 60, 0.17);
-	--folio-hl-bg-strong: rgba(255, 200, 60, 0.42);
-	--folio-hl-line: rgba(255, 205, 60, 0.85);
+	--folio-hl-bg: rgba(255, 205, 60, 0.24);
+	--folio-hl-bg-strong: rgba(255, 200, 60, 0.5);
+	--folio-hl-line: rgba(255, 205, 60, 0.9);
 	--folio-hl-draft: rgba(100, 160, 255, 0.28);
 	--folio-hl-resolved: rgba(160, 160, 160, 0.16);
 	color: var(--text-normal);

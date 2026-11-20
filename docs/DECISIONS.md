@@ -126,3 +126,4 @@ Decisions made autonomously where the spec said "confirm with me", "stop and ask
 - **F4.4** The active card steps out 8 px (was 16). In dark page or app themes its outline is a pastel gold (`--folio-active-outline`).
 - **F4.5 `npm run update-vaults`** builds, then installs into every vault in `.install-targets` (gitignored, one path per line), and adds a `.hotreload` marker so Hot Reload, if installed there, reloads Folio. Claude must never run it (CLAUDE.md).
 - **F4.6 Headless testing fix.** The vault copy used to symlink the whole plugin folder, so it shared (and once changed) the test vault's `data.json`. Now only the three build files are linked.
+- **F4.7** Dark-theme highlights are a bit stronger (normal 0.24, active 0.5 opacity). Card animations are about twice as fast (top 140 ms, step-out and shadow 100 ms, highlight 80 ms). Activation itself is instant; the half-second felt was the chained card animations.
