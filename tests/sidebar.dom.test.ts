@@ -20,7 +20,7 @@ describe('comments sidebar', () => {
 		md.editor = { cm };
 		const plugin = { lastMarkdownView: () => md, settings: { showResolved: false }, isTree: () => false } as never;
 		const view = new CommentsSidebarView({ app: { workspace: { on: () => ({}) } } } as never, plugin);
-		await view.onOpen();
+		await (view as unknown as { load: () => Promise<void> }).load(); // throws if a field shadows ItemView.titleEl
 		const el = (view as unknown as { contentEl: HTMLElement }).contentEl;
 		expect(el.querySelector('.folio-sidebar-title')!.textContent).toBe('n');
 		expect(el.querySelectorAll('.folio-card').length).toBe(3);

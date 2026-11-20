@@ -201,10 +201,18 @@ export class MarkdownView {
 export class ItemView {
 	app: unknown;
 	contentEl = document.createElement('div');
+	// Like Obsidian: the view header's own elements. Subclasses must not shadow these.
+	headerEl: HTMLElement | null = document.createElement('div');
+	titleEl: HTMLElement | null = document.createElement('div');
 	constructor(public leaf: { app?: unknown }) {
 		this.app = leaf.app ?? { workspace: { on: () => ({}) } };
 	}
 	registerEvent(): void {}
+	/** Mirrors what Obsidian does when it opens a view. */
+	async load(): Promise<void> {
+		(this.titleEl as unknown as { setText: (t: string) => void }).setText((this as unknown as { getDisplayText: () => string }).getDisplayText());
+		await (this as unknown as { onOpen: () => Promise<void> }).onOpen();
+	}
 }
 export class Plugin {}
 export class PluginSettingTab {}

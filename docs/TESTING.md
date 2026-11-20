@@ -124,3 +124,9 @@ Make the Obsidian window wide (≥ 1100 px editor pane). Open *Essays/A Short Hi
 - [ ] Settings → Folio → **Page theme: Paper light / Sepia / Paper dark** sliders (page brightness, text brightness, surround contrast, warmth) change open pages live. The ↺ button resets a theme.
 - [ ] In the light theme, the area around the page is clearly greyer than the page, and the page has a thin border.
 - [ ] The font dropdown's list uses a larger font.
+
+## Feedback round 2
+
+- [ ] Toolbar → Comments sidebar (or the command). The sidebar lists the note's threads with quotes. Clicking a card selects its text.
+- [ ] Activate a card, then click the grey area around the page (or empty space between cards). The card is no longer active.
+- [ ] Command palette → **Folio: Create new doc**, or right-click a folder → **New doc**, or the ribbon's document icon. "Untitled doc" opens with the page look and the toolbar, title ready to rename.

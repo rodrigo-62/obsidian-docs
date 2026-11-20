@@ -12,7 +12,8 @@
 		"test:watch": "vitest",
 		"typecheck": "tsc -noEmit -skipLibCheck",
 		"version": "node version-bump.mjs && git add manifest.json versions.json",
-		"vault:reset": "node scripts/build-test-vault.mjs"
+		"vault:reset": "node scripts/build-test-vault.mjs",
+		"install-plugin": "node scripts/install-plugin.mjs"
 	},
 	"license": "UNLICENSED",
 	"devDependencies": {

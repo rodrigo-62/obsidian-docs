@@ -13,12 +13,13 @@ import type FolioPlugin from './main';
 
 export const SIDEBAR_VIEW = 'folio-comments';
 
+// NB: field names avoid ItemView's own (headerEl, titleEl, …): shadowing them breaks Obsidian's view loading.
 export class CommentsSidebarView extends ItemView {
 	private cards = new Map<string, ThreadCard>();
-	private listEl!: HTMLElement;
-	private headerEl!: HTMLElement;
-	private emptyEl!: HTMLElement;
-	private detachedHeader!: HTMLElement;
+	private sbListEl!: HTMLElement;
+	private sbHeaderEl!: HTMLElement;
+	private sbEmptyEl!: HTMLElement;
+	private sbDetachedHeader!: HTMLElement;
 	private host: CardHost;
 	private source: MarkdownView | null = null;
 
@@ -64,10 +65,10 @@ export class CommentsSidebarView extends ItemView {
 	async onOpen(): Promise<void> {
 		this.contentEl.empty();
 		this.contentEl.addClass('folio-sidebar');
-		this.headerEl = this.contentEl.createDiv({ cls: 'folio-sidebar-header' });
-		this.emptyEl = this.contentEl.createDiv({ cls: 'folio-sidebar-empty' });
-		this.listEl = this.contentEl.createDiv({ cls: 'folio-sidebar-list' });
-		this.detachedHeader = createDiv({ cls: 'folio-detached-header', text: 'Detached comments' });
+		this.sbHeaderEl = this.contentEl.createDiv({ cls: 'folio-sidebar-header' });
+		this.sbEmptyEl = this.contentEl.createDiv({ cls: 'folio-sidebar-empty' });
+		this.sbListEl = this.contentEl.createDiv({ cls: 'folio-sidebar-list' });
+		this.sbDetachedHeader = createDiv({ cls: 'folio-detached-header', text: 'Detached comments' });
 		// Follow the active note on our own too (in case the plugin's call races the view's creation).
 		this.registerEvent(
 			this.app.workspace.on('active-leaf-change', (leaf) => {
@@ -102,13 +103,13 @@ export class CommentsSidebarView extends ItemView {
 
 	/** Re-render from the source editor's state. */
 	refresh(): void {
-		if (!this.listEl) return;
+		if (!this.sbListEl) return;
 		try {
 			this.render();
 		} catch (e) {
 			console.error('[folio] comments sidebar', e);
-			this.emptyEl.setText(`Folio could not show the comments: ${(e as Error).message}`);
-			this.emptyEl.show();
+			this.sbEmptyEl.setText(`Folio could not show the comments: ${(e as Error).message}`);
+			this.sbEmptyEl.show();
 		}
 	}
 
@@ -126,24 +127,24 @@ export class CommentsSidebarView extends ItemView {
 		const st = cm?.state.field(folioField, false);
 		this.renderHeader();
 		if (!cm || !st) {
-			this.emptyEl.setText(this.source ? 'Comments are shown for notes in Live Preview or Source mode.' : 'Open a note to see its comments.');
-			this.emptyEl.show();
-			this.listEl.empty();
+			this.sbEmptyEl.setText(this.source ? 'Comments are shown for notes in Live Preview or Source mode.' : 'Open a note to see its comments.');
+			this.sbEmptyEl.show();
+			this.sbListEl.empty();
 			for (const c of this.cards.values()) c.destroy();
 			this.cards.clear();
 			return;
 		}
 		if (!st.doc.ok) {
-			this.emptyEl.setText(`This note's comment data is damaged: ${st.doc.error ?? ''}`);
-			this.emptyEl.show();
+			this.sbEmptyEl.setText(`This note's comment data is damaged: ${st.doc.error ?? ''}`);
+			this.sbEmptyEl.show();
 			return;
 		}
 		const showResolved = st.ui.showResolved;
 		const vis = (id: string) => !st.doc.threads[id]!.resolved || showResolved;
 		const anchored = st.doc.anchored.filter(vis);
 		const detached = st.doc.detached.filter(vis);
-		this.emptyEl.toggle(anchored.length + detached.length === 0);
-		this.emptyEl.setText('No comments in this note. Select text and press Ctrl+Alt+M to add one.');
+		this.sbEmptyEl.toggle(anchored.length + detached.length === 0);
+		this.sbEmptyEl.setText('No comments in this note. Select text and press Ctrl+Alt+M to add one.');
 		const wanted = new Set([...anchored, ...detached]);
 		for (const [id, c] of this.cards) {
 			if (!wanted.has(id)) {
@@ -171,39 +172,39 @@ export class CommentsSidebarView extends ItemView {
 		};
 		anchored.forEach(place);
 		if (detached.length) {
-			this.detachedHeader.setText(`Detached comments (${detached.length})`);
-			order.push(this.detachedHeader);
+			this.sbDetachedHeader.setText(`Detached comments (${detached.length})`);
+			order.push(this.sbDetachedHeader);
 			detached.forEach(place);
 		}
-		const current = Array.from(this.listEl.children);
+		const current = Array.from(this.sbListEl.children);
 		if (current.length !== order.length || order.some((el, i) => current[i] !== el)) {
 			const focused = document.activeElement;
-			this.listEl.replaceChildren(...order);
-			if (focused instanceof HTMLElement && this.listEl.contains(focused)) focused.focus();
+			this.sbListEl.replaceChildren(...order);
+			if (focused instanceof HTMLElement && this.sbListEl.contains(focused)) focused.focus();
 		}
 		const active = st.ui.activeId ? this.cards.get(st.ui.activeId) : undefined;
 		if (active) active.el.scrollIntoView({ block: 'nearest' });
 	}
 
-	private titleEl: HTMLElement | null = null;
-	private resolvedBtn: HTMLElement | null = null;
+	private sbTitleEl: HTMLElement | null = null;
+	private sbResolvedBtn: HTMLElement | null = null;
 
 	private renderHeader(): void {
-		const h = this.headerEl;
-		if (!this.titleEl) {
-			this.titleEl = h.createDiv({ cls: 'folio-sidebar-title' });
+		const h = this.sbHeaderEl;
+		if (!this.sbTitleEl) {
+			this.sbTitleEl = h.createDiv({ cls: 'folio-sidebar-title' });
 			const actions = h.createDiv({ cls: 'folio-sidebar-actions' });
 			const add = actions.createEl('button', { cls: 'clickable-icon', attr: { 'aria-label': 'Add comment on the selection (Ctrl+Alt+M)' } });
 			setIcon(add, 'message-square-plus');
 			add.addEventListener('click', () => {
 				if (this.source) this.plugin.addComment(this.source);
 			});
-			this.resolvedBtn = actions.createEl('button', { cls: 'clickable-icon' });
-			this.resolvedBtn.addEventListener('click', () => void this.plugin.toggleShowResolved());
+			this.sbResolvedBtn = actions.createEl('button', { cls: 'clickable-icon' });
+			this.sbResolvedBtn.addEventListener('click', () => void this.plugin.toggleShowResolved());
 		}
-		this.titleEl.setText(this.source?.file?.basename ?? 'Comments');
+		this.sbTitleEl.setText(this.source?.file?.basename ?? 'Comments');
 		const on = this.plugin.settings.showResolved;
-		const btn = this.resolvedBtn!;
+		const btn = this.sbResolvedBtn!;
 		if (btn.dataset.on !== String(on)) {
 			btn.dataset.on = String(on);
 			btn.empty();

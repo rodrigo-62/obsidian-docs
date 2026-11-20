@@ -1,4 +1,4 @@
-import { MarkdownView, Menu, Notice, Plugin, TFile, editorInfoField, type Editor, type MarkdownFileInfo } from 'obsidian';
+import { MarkdownView, Menu, Notice, Plugin, TFile, TFolder, editorInfoField, normalizePath, type Editor, type MarkdownFileInfo } from 'obsidian';
 import { EditorView } from '@codemirror/view';
 import { DEFAULT_SETTINGS, FolioSettingTab, type FolioSettings } from './settings';
 import { CopyOptionsModal, copyForLLM, selectionOffsets } from './exportCommand';
@@ -39,6 +39,19 @@ export default class FolioPlugin extends Plugin {
 		this.registerCommentCommands();
 		this.registerNavigationCommands();
 		this.registerDocModeCommands();
+		this.addRibbonIcon('file-text', 'New doc', () => void this.createDoc());
+		this.registerEvent(
+			this.app.workspace.on('file-menu', (menu, file) => {
+				if (!(file instanceof TFolder)) return;
+				menu.addItem((i) =>
+					i
+						.setTitle('New doc')
+						.setIcon('file-text')
+						.setSection('action-primary')
+						.onClick(() => void this.createDoc(file)),
+				);
+			}),
+		);
 		this.registerEvent(
 			this.app.metadataCache.on('changed', (file) => {
 				if (!this.pendingPatch.has(file.path)) this.optimistic.delete(file.path);
@@ -271,6 +284,17 @@ export default class FolioPlugin extends Plugin {
 		});
 	}
 
+	/** Create "Untitled doc.md" with doc mode on, like Obsidian's New note. */
+	async createDoc(folder?: TFolder): Promise<void> {
+		const parent = folder ?? this.app.fileManager.getNewFileParent(this.app.workspace.getActiveFile()?.path ?? '');
+		const base = parent.isRoot() ? '' : `${parent.path}/`;
+		let path = normalizePath(`${base}Untitled doc.md`);
+		for (let i = 1; this.app.vault.getAbstractFileByPath(path); i++) path = normalizePath(`${base}Untitled doc ${i}.md`);
+		const file = await this.app.vault.create(path, '---\nfolio: true\n---\n\n');
+		const leaf = this.app.workspace.getLeaf(false);
+		await leaf.openFile(file, { active: true, state: { mode: 'source' }, eState: { rename: 'all' } });
+	}
+
 	async toggleDocMode(file: TFile): Promise<void> {
 		this.optimistic.delete(file.path);
 		let on = false;
@@ -294,6 +318,7 @@ export default class FolioPlugin extends Plugin {
 			if (!checking) fn(file, s, view);
 			return true;
 		};
+		this.addCommand({ id: 'new-doc', name: 'Create new doc', callback: () => void this.createDoc() });
 		this.addCommand({ id: 'toggle-doc-mode', name: 'Toggle doc mode for this note', checkCallback: withFile(false, (f) => void this.toggleDocMode(f)) });
 		this.addCommand({ id: 'zoom-in', name: 'Zoom in (doc mode)', checkCallback: withFile(true, (f, s) => this.updateDocSettings(f, { zoom: stepZoom(s.zoom, 1) }, 300)) });
 		this.addCommand({ id: 'zoom-out', name: 'Zoom out (doc mode)', checkCallback: withFile(true, (f, s) => this.updateDocSettings(f, { zoom: stepZoom(s.zoom, -1) }, 300)) });

@@ -9,7 +9,7 @@ import type { App } from 'obsidian';
 import { layoutCards, type CardBox } from '../../core/layout';
 import { stripMarkers } from '../../core/markers';
 import type { Thread } from '../../core/model';
-import { folioField, setHover, type FolioState } from '../cm/state';
+import { folioField, setActive, setHover, type FolioState } from '../cm/state';
 import { cancelDraft, createComment, ops, revealThread } from '../commentOps';
 import { createComposer } from '../composer';
 import { ThreadCard, type CardHost } from './card';
@@ -69,6 +69,9 @@ class MarginPlugin implements PluginValue {
 		for (const type of ['mousedown', 'mouseup', 'click', 'dblclick', 'keydown', 'keyup', 'keypress', 'input', 'beforeinput', 'paste', 'cut', 'copy', 'contextmenu', 'focusin', 'compositionstart', 'compositionend']) {
 			this.layer.addEventListener(type, (e) => e.stopPropagation());
 		}
+		// Clicking outside the text (the grey surround, page margins, empty space
+		// between cards) deactivates the active comment, like clicking in the text does.
+		view.scrollDOM.addEventListener('mousedown', this.onOutsideMouseDown);
 		this.layer.addEventListener('keydown', (e) => {
 			if (e.key === 'Escape' && !(e.target as HTMLElement).closest('textarea')) this.view.focus();
 		});
@@ -82,6 +85,13 @@ class MarginPlugin implements PluginValue {
 			if (!this.destroyed) this.sync(true);
 		});
 	}
+
+	private onOutsideMouseDown = (e: MouseEvent): void => {
+		const t = e.target as Node | null;
+		if (!t || this.layer.contains(t) || this.view.contentDOM.contains(t)) return;
+		const st = this.st();
+		if (st?.ui.activeId) this.view.dispatch({ effects: setActive.of(null) });
+	};
 
 	private ctx(): MarginContext | null {
 		return this.view.state.facet(marginContext);
@@ -344,6 +354,7 @@ class MarginPlugin implements PluginValue {
 
 	destroy(): void {
 		this.destroyed = true;
+		this.view.scrollDOM.removeEventListener('mousedown', this.onOutsideMouseDown);
 		this.resize.disconnect();
 		for (const c of this.cards.values()) c.destroy();
 		this.cards.clear();
