@@ -50,10 +50,19 @@ export const defaults = { showResolved: false };
 
 function readDoc(text: Text, prev: DocComments | null): DocComments {
 	const doc = inlineCommentStore.read(text.toString());
-	// Keep thread identity while the JSON block is byte-identical.
-	if (prev && prev.ok && doc.ok && prev.block && doc.block && prev.block.json === doc.block.json) {
+	if (!prev || !prev.ok || !doc.ok) return doc;
+	// Keep thread identity while the JSON block is byte-identical…
+	if (prev.block && doc.block && prev.block.json === doc.block.json) {
 		doc.threads = prev.threads;
+		return doc;
 	}
+	// …and per thread when only other threads changed, so cards don't re-render needlessly.
+	const merged: typeof doc.threads = {};
+	for (const [id, t] of Object.entries(doc.threads)) {
+		const old = prev.threads[id];
+		merged[id] = old && JSON.stringify(old) === JSON.stringify(t) ? old : t;
+	}
+	doc.threads = merged;
 	return doc;
 }
 

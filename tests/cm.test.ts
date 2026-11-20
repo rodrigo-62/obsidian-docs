@@ -50,6 +50,19 @@ describe('folioField', () => {
 		expect(s2.field(folioField).doc.threads).toBe(s.field(folioField).doc.threads);
 	});
 
+	it('keeps unchanged thread objects when another thread changes', () => {
+		let s = mk(`${o('x')}a${c('x')} ${o('y')}b${c('y')}`, ['x', 'y']);
+		// first write refreshes the cached quotes ('q' -> actual text)
+		s = apply(s, { changes: store.write(s.doc.toString(), s.field(folioField).doc.threads), annotations: folioInternal.of(true) });
+		const before = s.field(folioField).doc.threads;
+		const md = s.doc.toString();
+		const changes = store.write(md, { ...before, y: { ...before.y!, resolved: true } });
+		const s2 = apply(s, { changes, annotations: folioInternal.of(true) });
+		const after = s2.field(folioField).doc.threads;
+		expect(after.x).toBe(before.x);
+		expect(after.y).not.toBe(before.y);
+	});
+
 	it('activates the thread under the cursor on selection', () => {
 		const s = mk(`a ${o('x')}bbb${c('x')} c`);
 		const a = s.field(folioField).doc.markers.anchors.get('x')!;

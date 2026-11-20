@@ -56,3 +56,27 @@ Use *Comments without doc mode* and *Overlapping comments*, in Live Preview unle
 - [ ] Start a comment, then press Esc in the modal. Nothing changes in the note (check Source mode).
 - [ ] Select text inside a code block and press Ctrl+Alt+M. A notice says comments can't start or end inside a code block.
 - [ ] Command palette → **Folio: Repair comment markers in this note** in *Overlapping comments*. The notice reports 1 removed marker (the lone `lone` start marker).
+
+## Phase 5: margin cards
+
+Make the Obsidian window wide (≥ 1100 px editor pane). Open *Essays/A Short History of Lighthouses* in Live Preview.
+
+- [ ] Comment cards appear in a column **to the right of the text**, each roughly level with its highlighted text. The text column moves a little to the left to make room. Cards never overlap.
+- [ ] Scroll: the cards scroll together with the text, without lagging or jumping.
+- [ ] Hover a card: its highlight in the text gets stronger. Move away and it softens.
+- [ ] Click a card: its text is selected, the card gets a shadow and a coloured border and expands to show all comments plus a "Reply…" box. Cards above it shift up and cards below shift down, so the active card stays level with its text.
+- [ ] Click inside highlighted text in the editor: the matching card becomes active.
+- [ ] The "Light and Distance" card, when inactive, shows the first comment, "2 more replies" and the last reply. When active, it shows all 4. The third comment shows a chip **↳ re: "The opening could say more about distance at sea"**. Click the chip and the first comment flashes.
+- [ ] In that card, the second comment's `---` lines render as horizontal separators (not as a heading), and `**Check**` in the 4th comment is bold.
+- [ ] Type a reply and press Ctrl+Enter. It appears at the bottom of the card. In Source mode, the JSON at the end has a new line with `"parent": "a4"` (the last comment).
+- [ ] Hover a reply and click its ↩ icon. The reply box says "Replying to …". Send, and the new reply shows a ↳ re: chip if it isn't directly below its parent.
+- [ ] Hover a reply and use ✎ to edit it. Save with Ctrl+Enter, and "(edited)" appears. Use 🗑 to delete it; it disappears, and Ctrl+Z in the editor brings it back.
+- [ ] Click ✓ on a card. The card disappears and its highlight goes away. Command palette → **Folio: Toggle show resolved comments**: it comes back greyed with a "Resolved" badge and a ↺ button. Click ↺ to re-open it.
+- [ ] ⋯ → **Delete thread** asks for confirmation, then removes the card, the highlight and the markers (check in Source mode).
+- [ ] Select new text and press Ctrl+Alt+M. A "New comment" card appears in the margin level with the selection, with the cursor in it. Esc cancels and nothing is left behind. Again, type and Ctrl+Enter: the new card is active.
+- [ ] Start a new comment, then click back into the text without typing. The empty draft disappears.
+- [ ] *Overlapping comments*: a **Detached comments (2)** header with dashed cards for "dt5k" and "lone" appears below the end of the text (scroll down).
+- [ ] Make the pane narrow (split the window or shrink it). The margin disappears and a **💬 N** pill appears top-right. Click it: the **Comments** sidebar opens on the right, listing the threads in document order with quotes. Clicking a sidebar card selects its text. Ctrl+Alt+M now opens the modal.
+- [ ] Command palette → **Folio: Open comments sidebar** works in wide panes too. It follows the note you switch to.
+- [ ] *Performance — very long note*: scrolling and typing stay smooth with 100 cards in the margin.
+- [ ] Open the same note in two panes side by side (wide window). Both show cards. Replying in one pane updates the other.

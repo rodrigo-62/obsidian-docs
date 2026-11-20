@@ -35,6 +35,7 @@ export function createComposer(parent: HTMLElement, opts: ComposerOptions): Comp
 	textarea.addEventListener('input', () => {
 		grow();
 		updateState();
+		el.toggleClass('has-text', textarea.value.trim() !== '');
 	});
 	textarea.addEventListener('keydown', (e) => {
 		if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {

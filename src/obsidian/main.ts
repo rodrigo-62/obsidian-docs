@@ -1,4 +1,4 @@
-import { MarkdownView, Menu, Notice, Plugin, type Editor, type MarkdownFileInfo } from 'obsidian';
+import { MarkdownView, Menu, Notice, Plugin, editorInfoField, type Editor, type MarkdownFileInfo } from 'obsidian';
 import type { EditorView } from '@codemirror/view';
 import { DEFAULT_SETTINGS, FolioSettingTab, type FolioSettings } from './settings';
 import { CopyOptionsModal, copyForLLM, selectionOffsets } from './exportCommand';
@@ -6,18 +6,24 @@ import { commentExtensions, editorViewOf, folioField } from './cm';
 import { defaults as cmDefaults, setShowResolved } from './cm/state';
 import { cancelDraft, createComment, repairMarkers, startDraft } from './commentOps';
 import { ComposerModal } from './composer';
+import { marginContext, marginExtensions, marginIsWide, refreshMargin, type MarginContext } from './margin/marginView';
+import { CommentsSidebarView, SIDEBAR_VIEW } from './sidebarView';
 
 export default class FolioPlugin extends Plugin {
 	settings!: FolioSettings;
 	/** Header buttons added per view, so they can be removed again. */
 	private headerButtons = new WeakMap<MarkdownView, HTMLElement[]>();
 	private viewsWithButtons = new Set<MarkdownView>();
+	/** Per-thread tree view toggles for this session, keyed by "path\u0000id". */
+	private treeState = new Map<string, boolean>();
+	private lastMarkdown: MarkdownView | null = null;
 
 	async onload(): Promise<void> {
 		await this.loadSettings();
 		cmDefaults.showResolved = this.settings.showResolved;
 		this.addSettingTab(new FolioSettingTab(this.app, this));
-		this.registerEditorExtension(commentExtensions());
+		this.registerView(SIDEBAR_VIEW, (leaf) => new CommentsSidebarView(leaf, this));
+		this.registerEditorExtension(commentExtensions([marginContext.of(this.marginContext()), ...marginExtensions]));
 		this.registerExportCommands();
 		this.registerCommentCommands();
 
@@ -28,8 +34,75 @@ export default class FolioPlugin extends Plugin {
 			}),
 		);
 		this.registerEvent(this.app.workspace.on('layout-change', () => this.refreshAllViews()));
-		this.registerEvent(this.app.workspace.on('active-leaf-change', () => this.refreshAllViews()));
-		this.app.workspace.onLayoutReady(() => this.refreshAllViews());
+		this.registerEvent(
+			this.app.workspace.on('active-leaf-change', (leaf) => {
+				if (leaf?.view instanceof MarkdownView) {
+					this.lastMarkdown = leaf.view;
+					this.sidebar()?.setSource(leaf.view);
+				}
+				this.refreshAllViews();
+			}),
+		);
+		this.app.workspace.onLayoutReady(() => {
+			this.lastMarkdown = this.app.workspace.getActiveViewOfType(MarkdownView);
+			this.refreshAllViews();
+		});
+	}
+
+	// --- Margin / sidebar plumbing ------------------------------------------
+
+	private marginContext(): MarginContext {
+		return {
+			app: this.app,
+			marginWidth: () => this.settings.marginWidth,
+			isMainEditor: (view) => this.markdownViews().some((v) => editorViewOf(v) === view),
+			sourcePath: (view) => view.state.field(editorInfoField, false)?.file?.path ?? '',
+			isTree: (path, id) => this.isTree(path, id),
+			setTree: (path, id, tree) => this.setTree(path, id, tree),
+			openSidebar: () => void this.activateSidebar(),
+			changed: (view) => {
+				const sb = this.sidebar();
+				if (sb && editorViewOf(this.lastMarkdown) === view) sb.refresh();
+			},
+		};
+	}
+
+	isTree(path: string, id: string): boolean {
+		return this.treeState.get(`${path}\u0000${id}`) ?? this.settings.defaultThreadView === 'tree';
+	}
+
+	setTree(path: string, id: string, tree: boolean): void {
+		this.treeState.set(`${path}\u0000${id}`, tree);
+	}
+
+	lastMarkdownView(): MarkdownView | null {
+		if (this.lastMarkdown && this.markdownViews().includes(this.lastMarkdown)) return this.lastMarkdown;
+		return this.app.workspace.getActiveViewOfType(MarkdownView) ?? this.markdownViews()[0] ?? null;
+	}
+
+	sidebar(): CommentsSidebarView | null {
+		const leaf = this.app.workspace.getLeavesOfType(SIDEBAR_VIEW)[0];
+		return leaf && leaf.view instanceof CommentsSidebarView ? leaf.view : null;
+	}
+
+	async activateSidebar(): Promise<void> {
+		let leaf = this.app.workspace.getLeavesOfType(SIDEBAR_VIEW)[0];
+		if (!leaf) {
+			const right = this.app.workspace.getRightLeaf(false);
+			if (!right) return;
+			await right.setViewState({ type: SIDEBAR_VIEW, active: true });
+			leaf = right;
+		}
+		await this.app.workspace.revealLeaf(leaf);
+		this.sidebar()?.setSource(this.lastMarkdownView());
+	}
+
+	/** Ask every margin to re-render (e.g. after a tree toggle from the sidebar). */
+	refreshMargins(): void {
+		for (const v of this.markdownViews()) {
+			const cm = editorViewOf(v);
+			if (cm) refreshMargin(cm);
+		}
 	}
 
 	onunload(): void {
@@ -128,8 +201,9 @@ export default class FolioPlugin extends Plugin {
 		this.openComposer(cm, draft);
 	}
 
-	/** Composer for a draft (overridden by the margin in Phase 5 when there is room). */
+	/** The margin shows a draft card when there is room; otherwise a modal opens. */
 	openComposer(cm: EditorView, draft: { from: number; to: number }): void {
+		if (marginIsWide(cm)) return;
 		const quote = cm.state.sliceDoc(draft.from, draft.to).replace(/\u200b?<!--\/?c:[A-Za-z0-9]+-->/g, '');
 		new ComposerModal(this.app, 'Add comment', quote.length > 300 ? quote.slice(0, 300) + '…' : quote, {
 			placeholder: 'Comment…',
@@ -155,6 +229,11 @@ export default class FolioPlugin extends Plugin {
 				if (!checking) this.addComment(ctx);
 				return true;
 			},
+		});
+		this.addCommand({
+			id: 'open-comments-sidebar',
+			name: 'Open comments sidebar',
+			callback: () => void this.activateSidebar(),
 		});
 		this.addCommand({
 			id: 'toggle-show-resolved',

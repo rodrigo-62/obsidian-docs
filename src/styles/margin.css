@@ -1,0 +1,343 @@
+/* ---- Margin layout ---------------------------------------------------- */
+/* Make room on the right of the text for the comment column. */
+.view-content > .markdown-source-view.mod-cm6 > .cm-editor.folio-has-margin > .cm-scroller,
+.markdown-source-view.mod-cm6 > .cm-editor.folio-has-margin > .cm-scroller {
+	padding-right: calc(var(--folio-margin-width, 300px) + 40px);
+}
+
+.folio-margin {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 300px;
+	height: 0;
+	z-index: 3;
+	pointer-events: none;
+}
+.folio-margin.is-hidden {
+	display: none;
+}
+.folio-margin > .folio-card,
+.folio-margin > .folio-detached-header {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	pointer-events: auto;
+	transition: transform 160ms ease;
+	will-change: transform;
+}
+
+.folio-detached-header {
+	font-family: var(--font-interface);
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-semibold);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: var(--text-muted);
+	padding: 6px 2px 2px;
+	border-top: 1px solid var(--background-modifier-border);
+}
+
+.folio-narrow-btn {
+	position: absolute;
+	top: 6px;
+	right: 18px;
+	z-index: 5;
+	font-family: var(--font-interface);
+	font-size: var(--font-ui-smaller);
+	padding: 2px 8px;
+	border-radius: 10px;
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	color: var(--text-muted);
+	cursor: pointer;
+}
+.folio-narrow-btn:hover {
+	color: var(--text-normal);
+	background: var(--background-modifier-hover);
+}
+
+/* ---- Cards ------------------------------------------------------------- */
+.folio-card {
+	box-sizing: border-box;
+	background: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 8px;
+	padding: 6px 10px 8px;
+	font-family: var(--font-interface);
+	font-size: var(--font-ui-small);
+	line-height: 1.45;
+	color: var(--text-normal);
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+	cursor: pointer;
+	text-align: left;
+}
+.folio-card:hover {
+	border-color: var(--background-modifier-border-hover);
+}
+.folio-card.is-active {
+	cursor: default;
+	z-index: 2;
+	border-color: var(--folio-hl-line);
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.14);
+}
+.folio-card.is-resolved {
+	opacity: 0.7;
+	background: var(--background-secondary);
+}
+.folio-card.is-detached {
+	border-style: dashed;
+}
+.folio-card-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 4px;
+	min-height: 24px;
+}
+.folio-card-meta {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	color: var(--text-faint);
+	font-size: var(--font-ui-smaller);
+	min-width: 0;
+}
+.folio-badge {
+	font-size: 0.85em;
+	padding: 0 5px;
+	border-radius: 4px;
+	background: var(--background-modifier-hover);
+	color: var(--text-muted);
+}
+.folio-badge-detached {
+	background: rgba(var(--color-orange-rgb), 0.15);
+	color: var(--color-orange);
+}
+.folio-card-actions {
+	display: flex;
+	gap: 0;
+	opacity: 0;
+	transition: opacity 100ms ease;
+}
+.folio-card:hover .folio-card-actions,
+.folio-card.is-active .folio-card-actions,
+.folio-card-sidebar .folio-card-actions {
+	opacity: 1;
+}
+.folio-icon-btn.clickable-icon {
+	padding: 3px;
+	height: 22px;
+	width: 22px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	background: transparent;
+	box-shadow: none;
+	border: none;
+}
+.folio-icon-btn svg {
+	width: 14px;
+	height: 14px;
+}
+.folio-resolve-btn:hover {
+	color: var(--color-green);
+}
+.folio-card-quote {
+	font-style: italic;
+	color: var(--text-muted);
+	border-left: 3px solid var(--folio-hl-line);
+	padding: 0 0 0 8px;
+	margin: 2px 0 6px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* ---- Comments inside a card -------------------------------------------- */
+.folio-comment {
+	position: relative;
+	padding: 2px 0;
+}
+.folio-comment + .folio-comment,
+.folio-more + .folio-comment {
+	border-top: 1px solid var(--background-modifier-border);
+	margin-top: 4px;
+	padding-top: 6px;
+}
+.folio-comment-meta {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	color: var(--text-faint);
+	font-size: var(--font-ui-smaller);
+	min-height: 18px;
+}
+.folio-comment-meta:empty {
+	display: none;
+}
+.folio-comment-actions {
+	margin-left: auto;
+	display: flex;
+	visibility: hidden;
+}
+.folio-comment:hover > .folio-comment-meta > .folio-comment-actions {
+	visibility: visible;
+}
+.folio-comment-body {
+	user-select: text;
+	-webkit-user-select: text;
+	overflow-wrap: anywhere;
+}
+.folio-comment-body > :first-child {
+	margin-top: 0;
+}
+.folio-comment-body > :last-child {
+	margin-bottom: 0;
+}
+.folio-comment-body p {
+	margin: 0.3em 0;
+}
+.folio-comment-body hr {
+	margin: 0.5em 0;
+	border: none;
+	border-top: 1px dashed var(--text-faint);
+}
+.folio-comment-body ul,
+.folio-comment-body ol {
+	padding-left: 1.3em;
+	margin: 0.3em 0;
+}
+.folio-comment.is-compact .folio-comment-body {
+	display: -webkit-box;
+	-webkit-line-clamp: 4;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+.folio-more {
+	color: var(--text-accent);
+	font-size: var(--font-ui-smaller);
+	margin: 4px 0 0;
+	cursor: pointer;
+}
+.folio-chip {
+	display: block;
+	max-width: 100%;
+	box-sizing: border-box;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+	background: var(--background-secondary);
+	border-radius: 4px;
+	padding: 0 6px;
+	margin: 1px 0 3px;
+	cursor: pointer;
+}
+.folio-chip:hover {
+	color: var(--text-normal);
+	background: var(--background-modifier-hover);
+}
+@keyframes folio-row-flash {
+	0% { background-color: var(--folio-hl-bg-strong); }
+	100% { background-color: transparent; }
+}
+.folio-comment.is-flashing {
+	animation: folio-row-flash 1.4s ease;
+	border-radius: 4px;
+}
+.folio-edited {
+	font-style: italic;
+}
+
+/* tree view */
+.folio-tree-row {
+	margin-left: calc(var(--folio-indent, 0) * 12px);
+}
+.folio-tree-row.is-indented {
+	padding-left: 8px;
+	border-left: 2px solid var(--background-modifier-border);
+}
+.folio-tree-row + .folio-tree-row.is-indented {
+	border-top: none;
+	margin-top: 2px;
+}
+.folio-tree-toggle {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+	cursor: pointer;
+	float: right;
+	margin-left: 4px;
+}
+
+/* reply box */
+.folio-card-footer {
+	margin-top: 6px;
+}
+.folio-reply-target {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+	margin-bottom: 2px;
+}
+.folio-reply-composer:not(:focus-within):not(.has-text) .folio-composer-actions {
+	display: none;
+}
+.folio-reply-composer:not(:focus-within):not(.has-text) .folio-composer-input {
+	min-height: 0;
+	height: 2em;
+}
+.folio-card .folio-composer-hint {
+	display: none;
+}
+.folio-card .folio-composer-actions button {
+	font-size: var(--font-ui-smaller);
+	padding: 2px 10px;
+	height: auto;
+}
+.folio-draft {
+	cursor: default;
+}
+
+/* ---- Sidebar ------------------------------------------------------------ */
+.folio-sidebar {
+	padding: 0 !important;
+}
+.folio-sidebar-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 8px 10px;
+	border-bottom: 1px solid var(--background-modifier-border);
+	position: sticky;
+	top: 0;
+	background: var(--background-secondary);
+	z-index: 1;
+}
+.folio-sidebar-title {
+	font-weight: var(--font-semibold);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.folio-sidebar-actions {
+	display: flex;
+	gap: 2px;
+}
+.folio-sidebar-empty {
+	padding: 16px 12px;
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}
+.folio-sidebar-list {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: 10px;
+}
+.folio-sidebar-list .folio-detached-header {
+	margin-top: 6px;
+}

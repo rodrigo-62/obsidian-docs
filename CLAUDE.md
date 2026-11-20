@@ -27,5 +27,5 @@
 
 ## Current status / next step
 
-- **Done:** Phases 0, 2, 3, 4. Phase 4 = `src/obsidian/cm/` (state field, decorations, atomic ranges, edit filter, clipboard), `commentOps.ts` (all writes), `composer.ts` (textarea plus modal). Headless CM tests in `tests/cm.test.ts`. 147 tests.
-- **Next:** Phase 5 (margin cards in `src/obsidian/margin/`: ViewPlugin layer inside `.cm-scroller`, pure layout algorithm in `core/layout.ts`, cards with replies and parent chips, edit/delete/resolve, show resolved, detached section, draft card replacing the modal, narrow-pane sidebar `ItemView`).
+- **Done:** Phases 0, 2, 3, 4, 5. Phase 5 = `core/layout.ts`, `obsidian/margin/` (`marginView.ts` ViewPlugin layer in `.cm-scroller`; `card.ts` shared thread card), `sidebarView.ts` (narrow-pane fallback and general list). DOM smoke tests in happy-dom (`tests/margin.dom.test.ts`, obsidian mock aliased in `vitest.config.ts`). 162 tests.
+- **Next:** Phase 6 (tree view is already in the cards; still to do: next/previous comment commands, settings polish, reading-view support if feasible). Then Phase 1 (doc mode page appearance, toolbar) last.

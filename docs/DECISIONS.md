@@ -49,3 +49,16 @@ Decisions made autonomously where the spec said "confirm with me", "stop and ask
 - **D4.8 Activation.** Moving the cursor (click or keyboard) into commented text activates its innermost thread. Leaving it deactivates.
 - **D4.9 Orphan quotes** are refreshed on every comment write, not at the moment the text is deleted. A thread orphaned by deleting edited text keeps the quote from its last write. Updating the quote mid-edit would mean rewriting the thread block on ordinary keystrokes.
 - **D4.10 Interim composer.** Until the margin exists (Phase 5), *Add comment* opens a small modal (Ctrl+Enter saves, Esc cancels, empty = nothing). The modal stays as the fallback when there is no room for the margin.
+
+## Phase 5: margin cards
+
+- **D5.1 Margin layer** is a child of `.cm-scroller` (like CodeMirror's own layers), so cards scroll with the text for free. Positions are only recomputed in `requestMeasure` after document, geometry, viewport or height changes, or a card resize. Cards are placed with `transform: translateY()`. Anchors outside the viewport use `lineBlockAt` (height-map estimates, which settle as you scroll). Visible ones use `coordsAtPos`.
+- **D5.2 Making room.** When a note has comments (or a draft), the editor gets `folio-has-margin`, which adds right padding (margin width + 40 px) to the scroller. The column then sits right of the text; with readable line width on, the text moves left a bit, as in Google Docs.
+- **D5.3 ⚠ Compact inactive cards.** An inactive card shows the first comment (max 4 lines) and the latest reply, with "N more replies" between. The active card shows everything plus the reply box. This keeps 100 threads manageable in a 300 px column.
+- **D5.4 Layout algorithm** is pure (`core/layout.ts`, tested): top-down stacking, and the active card (or a draft) is pinned to its anchor while earlier cards are pushed up. Cards never go above the first line. Detached threads stack below the end of the text under "Detached comments (N)".
+- **D5.5 Replying.** The reply box replies to the last comment by default, so a plain conversation needs no chips. The ↩ icon on a comment (or "Reply to the first comment" in the ⋯ menu) targets that comment and shows "Replying to …" with an ×.
+- **D5.6 Root comment actions** (edit, delete thread, reply to it) are in the card's ⋯ menu. Replies have hover icons. Deleting a reply needs no confirmation (Ctrl+Z in the editor undoes it). Deleting a thread asks first.
+- **D5.7 Narrow panes.** When the scroller can't fit 380 px of text plus the margin, the margin hides and a "💬 N" pill appears top-right. Clicking it opens the **Comments sidebar** (also available as a command, any time). *Add comment* then uses the modal composer. The sidebar always follows the last active note.
+- **D5.8 Empty drafts vanish** when focus leaves them, as in Google Docs. A draft with text stays until saved or cancelled.
+- **D5.9 Tree view state** (per thread) is kept for the session only, keyed by file and thread. The default comes from settings (flat). It isn't written to the note.
+- **D5.10 Testing without Obsidian.** `tests/margin.dom.test.ts` runs the real margin and cards in happy-dom against a CodeMirror view, with a minimal `obsidian` mock (`tests/mocks/obsidian.ts`, aliased in `vitest.config.ts`). Layout numbers are zero there, so positions still need the manual check.
