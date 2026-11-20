@@ -15,5 +15,6 @@ result
 dist/
 .install-targets
 
-# Personal notes kept out of git (stay on disk)
-/test-vault/Essays/A Short History of Lighthouses.md
+# Personal test notes stay out of git (only the sample essay is tracked)
+/test-vault/Essays/*
+!/test-vault/Essays/Sample essay.md
