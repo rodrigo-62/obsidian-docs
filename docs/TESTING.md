@@ -90,3 +90,20 @@ Make the Obsidian window wide (≥ 1100 px editor pane). Open *Essays/A Short Hi
 - [ ] Switch the essay to **Reading view** (Ctrl+E or the book icon). Commented passages are highlighted (not the resolved one). The list item, blockquote and heading comments keep their formatting, and no raw `<!--` text appears anywhere.
 - [ ] Click a highlight in Reading view. The Comments sidebar opens with that thread active, and you can reply from there. The reading view refreshes with the reply saved.
 - [ ] Settings → Folio → change *Margin width* (e.g. to 400). The margin in an open note widens right away.
+
+## Phase 1: doc mode and page appearance
+
+- [ ] Open *Essays/A Short History of Lighthouses* (doc mode, light, Liberation Serif 13 pt). The note shows as a **white page with a soft shadow on a grey background**, centred, with a slim **toolbar** at the top: zoom 100%, font, `− 13 +`, width 42 em, a sun icon, then comment buttons and a **Copy for LLM** button.
+- [ ] *Plain note* (no doc mode) looks completely normal and has no toolbar.
+- [ ] Zoom dropdown → 150%. Text **and** page width grow together, and the margin cards move with the text and stay aligned. Run `cat` on the file (or check Source mode): the frontmatter has `folio-zoom: 150`.
+- [ ] Hold **Ctrl+Alt** and scroll over the page. Zoom steps up and down smoothly, and the frontmatter updates shortly after you stop.
+- [ ] Font size − / +: the text shrinks or grows by 1 pt. Click the number to type a size.
+- [ ] Font dropdown: fonts you don't have are marked "(not installed)". Pick one you have (e.g. Liberation Serif); the page font changes. Pick *Custom font name…* and type a name.
+- [ ] Width dropdown → 30 em: the page gets narrower. *Custom…* lets you type a width.
+- [ ] Theme button: sun (paper light) → moon (paper dark): **only this page** goes dark while the sidebar, header and other panes keep the app theme. Next click → monitor icon: follows the app again. Highlights stay readable in both.
+- [ ] Open *Overlapping comments* (dark page) side by side with the essay (light page). **Two panes with different notes look different.**
+- [ ] Open the essay in **two panes**. Change the zoom in one: the other pane updates to the same zoom.
+- [ ] Command palette → **Folio: Toggle doc mode for this note** on *Plain note*. It becomes a page with a toolbar, and `folio: true` appears in its properties. Run it again: back to normal, and the toolbar, background and fonts are all gone.
+- [ ] Commands **Zoom in / Zoom out / Reset zoom (doc mode)** work and are greyed out for notes without doc mode.
+- [ ] Switch a doc-mode note to Reading view. It still looks like a page with the same font and width.
+- [ ] Disable the Folio plugin (Settings → Community plugins). All pages, toolbars, margins and header buttons disappear without reloading. Enable it again and they come back.

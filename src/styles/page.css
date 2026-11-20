@@ -1,0 +1,162 @@
+/* ---- Doc mode: page look (SPEC §4.1) ------------------------------------
+   All rules are scoped to .view-content.folio-doc, set on one view's content
+   element by pageStyle.ts. Never on body. */
+
+.view-content.folio-doc {
+	--folio-surround: var(--background-secondary);
+	--folio-page-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 4px 14px rgba(0, 0, 0, 0.06);
+	display: flex;
+	flex-direction: column;
+	background-color: var(--folio-surround);
+}
+.theme-dark .view-content.folio-doc:not(.folio-theme-light) {
+	--folio-page-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+.view-content.folio-doc > .markdown-source-view,
+.view-content.folio-doc > .markdown-reading-view {
+	flex: 1 1 0;
+	min-height: 0;
+	height: auto;
+}
+
+/* Surround */
+.view-content.folio-doc .markdown-source-view.mod-cm6 .cm-scroller,
+.view-content.folio-doc .markdown-preview-view {
+	background-color: var(--folio-surround);
+}
+.view-content.folio-doc .markdown-source-view.mod-cm6 .cm-editor {
+	background-color: var(--folio-surround);
+}
+
+/* The page: the text column plus page margins, centred, with a shadow.
+   Width is in px computed from (width em × zoomed font size), so zoom scales it. */
+.view-content.folio-doc .markdown-source-view.mod-cm6 .cm-sizer,
+.view-content.folio-doc .markdown-preview-view .markdown-preview-sizer {
+	box-sizing: border-box;
+	max-width: calc(var(--folio-page-width) + 2 * var(--folio-page-pad-x));
+	width: 100%;
+	margin-left: auto;
+	margin-right: auto;
+	padding: var(--folio-page-pad-y) var(--folio-page-pad-x) calc(var(--folio-page-pad-y) * 2);
+	background-color: var(--background-primary);
+	box-shadow: var(--folio-page-shadow);
+	border-radius: 2px;
+	margin-top: 12px;
+	margin-bottom: 24px;
+	min-height: calc(100% - 36px);
+}
+.view-content.folio-doc .markdown-source-view.mod-cm6 .cm-content,
+.view-content.folio-doc .markdown-source-view.mod-cm6 .cm-line,
+.view-content.folio-doc .markdown-source-view.mod-cm6 .cm-sizer > .inline-title,
+.view-content.folio-doc .markdown-source-view.mod-cm6 .cm-sizer > .metadata-container {
+	max-width: var(--folio-page-width);
+}
+/* Obsidian's readable-line-width rules size the content by --file-line-width (overridden per page). */
+.view-content.folio-doc .markdown-source-view.mod-cm6 .cm-contentContainer {
+	max-width: var(--folio-page-width);
+}
+
+/* Highlight colours follow the page theme, not the app theme. */
+.view-content.folio-theme-light {
+	--folio-hl-bg: rgba(255, 210, 0, 0.26);
+	--folio-hl-bg-strong: rgba(255, 186, 0, 0.55);
+	--folio-hl-line: rgba(220, 160, 0, 0.95);
+	--folio-hl-draft: rgba(80, 140, 255, 0.25);
+	--folio-hl-resolved: rgba(128, 128, 128, 0.18);
+	color: var(--text-normal);
+}
+.view-content.folio-theme-dark {
+	--folio-hl-bg: rgba(255, 205, 60, 0.17);
+	--folio-hl-bg-strong: rgba(255, 200, 60, 0.42);
+	--folio-hl-line: rgba(255, 205, 60, 0.85);
+	--folio-hl-draft: rgba(100, 160, 255, 0.28);
+	--folio-hl-resolved: rgba(160, 160, 160, 0.16);
+	color: var(--text-normal);
+}
+
+/* ---- Toolbar (SPEC §4.5) -------------------------------------------------- */
+.folio-toolbar {
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 4px 6px;
+	padding: 4px 10px;
+	min-height: 36px;
+	box-sizing: border-box;
+	background: var(--background-primary);
+	border-bottom: 1px solid var(--background-modifier-border);
+	font-family: var(--font-interface);
+	font-size: var(--font-ui-small);
+	color: var(--text-normal);
+	z-index: 4;
+}
+.folio-tb-group {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+	padding-right: 6px;
+	border-right: 1px solid var(--background-modifier-border);
+}
+.folio-tb-group:last-of-type,
+.folio-tb-comments {
+	border-right: none;
+}
+.folio-tb-spacer {
+	flex: 1 1 auto;
+}
+.folio-toolbar select.dropdown {
+	height: 26px;
+	font-size: var(--font-ui-smaller);
+	padding-top: 0;
+	padding-bottom: 0;
+}
+.folio-tb-zoom {
+	width: 76px;
+}
+.folio-tb-font {
+	max-width: 180px;
+}
+.folio-tb-font.is-missing {
+	color: var(--text-error);
+}
+.folio-tb-width {
+	width: 82px;
+}
+.folio-tb-btn.clickable-icon {
+	height: 26px;
+	width: 26px;
+	padding: 4px;
+}
+.folio-tb-btn.is-active {
+	color: var(--interactive-accent);
+	background: var(--background-modifier-hover);
+}
+.folio-tb-size {
+	min-width: 30px;
+	height: 26px;
+	padding: 0 4px;
+	font-size: var(--font-ui-smaller);
+	box-shadow: none;
+}
+.folio-tb-label {
+	display: inline-flex;
+	color: var(--text-muted);
+	padding: 0 2px;
+}
+.folio-tb-label svg {
+	width: 14px;
+	height: 14px;
+}
+.folio-tb-copy {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	height: 26px;
+	padding: 0 10px;
+	font-size: var(--font-ui-smaller);
+}
+.folio-tb-copy svg {
+	width: 14px;
+	height: 14px;
+}

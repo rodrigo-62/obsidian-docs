@@ -1,3 +1,5 @@
 /* Folio styles (bundled by esbuild into styles.css) */
 @import './comments.css';
 @import './margin.css';
+@import './palette.css';
+@import './page.css';

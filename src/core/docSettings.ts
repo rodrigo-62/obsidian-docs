@@ -89,10 +89,10 @@ export function stepZoom(current: number, dir: 1 | -1): number {
 	return [...ZOOM_STEPS].reverse().find((z) => z < current) ?? LIMITS.zoom.min;
 }
 
-/** Font size steps like Google Docs' −/+ (1 pt below 12, then 2, then 4). */
+/** Font size −/+ (1 pt, like Google Docs' size box). Fractional sizes snap to whole points. */
 export function stepFontSize(current: number, dir: 1 | -1): number {
-	const step = (v: number) => (v < 12 || (v === 12 && dir < 0) ? 1 : v < 28 || (v === 28 && dir < 0) ? 2 : 4);
-	return clamp(current + dir * step(current), LIMITS.fontSize.min, LIMITS.fontSize.max);
+	const next = dir > 0 ? Math.floor(current) + 1 : Math.ceil(current) - 1;
+	return clamp(next, LIMITS.fontSize.min, LIMITS.fontSize.max);
 }
 
 export interface PageMetrics {

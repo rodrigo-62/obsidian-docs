@@ -28,12 +28,13 @@ describe('docSettings', () => {
 		expect(stepZoom(50, -1)).toBe(50);
 	});
 
-	it('steps font size like Google Docs', () => {
+	it('steps font size by 1 pt', () => {
 		expect(stepFontSize(11, 1)).toBe(12);
-		expect(stepFontSize(12, 1)).toBe(14);
 		expect(stepFontSize(12, -1)).toBe(11);
-		expect(stepFontSize(28, 1)).toBe(32);
+		expect(stepFontSize(12.5, 1)).toBe(13);
+		expect(stepFontSize(12.5, -1)).toBe(12);
 		expect(stepFontSize(6, -1)).toBe(6);
+		expect(stepFontSize(72, 1)).toBe(72);
 	});
 
 	it('computes page metrics: width scales with zoom and font size', () => {

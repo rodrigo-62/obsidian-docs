@@ -1,4 +1,4 @@
-import { MarkdownView, Menu, Notice, Plugin, editorInfoField, type Editor, type MarkdownFileInfo } from 'obsidian';
+import { MarkdownView, Menu, Notice, Plugin, TFile, editorInfoField, type Editor, type MarkdownFileInfo } from 'obsidian';
 import type { EditorView } from '@codemirror/view';
 import { DEFAULT_SETTINGS, FolioSettingTab, type FolioSettings } from './settings';
 import { CopyOptionsModal, copyForLLM, selectionOffsets } from './exportCommand';
@@ -9,6 +9,9 @@ import { ComposerModal } from './composer';
 import { marginContext, marginExtensions, marginIsWide, marginPlugin, refreshMargin, type MarginContext } from './margin/marginView';
 import { CommentsSidebarView, SIDEBAR_VIEW } from './sidebarView';
 import { clearReadingCache, makeReadingPostProcessor } from './reading';
+import { KEYS, readDocSettings, stepFontSize, stepZoom, toFrontmatter, type DocSettings, type PageSettings, type ThemeChoice } from '../core/docSettings';
+import { applyPageStyle, clearAllPageStyles } from './pageStyle';
+import { DocToolbar } from './toolbar';
 
 export default class FolioPlugin extends Plugin {
 	settings!: FolioSettings;
@@ -18,6 +21,11 @@ export default class FolioPlugin extends Plugin {
 	/** Per-thread tree view toggles for this session, keyed by "path\u0000id". */
 	private treeState = new Map<string, boolean>();
 	private lastMarkdown: MarkdownView | null = null;
+	private toolbars = new Map<MarkdownView, DocToolbar>();
+	/** Settings applied before the metadata cache has caught up with a frontmatter write (keeps zooming instant). */
+	private optimistic = new Map<string, { s: DocSettings; at: number }>();
+	private writeTimers = new Map<string, number>();
+	private pendingPatch = new Map<string, Partial<DocSettings>>();
 
 	async onload(): Promise<void> {
 		await this.loadSettings();
@@ -28,6 +36,15 @@ export default class FolioPlugin extends Plugin {
 		this.registerExportCommands();
 		this.registerCommentCommands();
 		this.registerNavigationCommands();
+		this.registerDocModeCommands();
+		this.registerEvent(
+			this.app.metadataCache.on('changed', (file) => {
+				if (!this.pendingPatch.has(file.path)) this.optimistic.delete(file.path);
+				for (const v of this.markdownViews()) if (v.file?.path === file.path) this.refreshView(v);
+			}),
+		);
+		this.registerEvent(this.app.workspace.on('file-open', () => this.refreshAllViews()));
+		this.registerDomEvent(document, 'wheel', (e) => this.onWheel(e), { passive: false });
 		this.registerMarkdownPostProcessor(makeReadingPostProcessor(() => this.settings.showResolved));
 		// Reading view: clicking a highlight shows the thread in the sidebar.
 		this.registerDomEvent(document, 'click', (e) => {
@@ -123,6 +140,10 @@ export default class FolioPlugin extends Plugin {
 	onunload(): void {
 		for (const view of this.viewsWithButtons) this.removeHeaderButtons(view);
 		this.viewsWithButtons.clear();
+		for (const t of this.toolbars.values()) t.destroy();
+		this.toolbars.clear();
+		clearAllPageStyles();
+		for (const t of this.writeTimers.values()) window.clearTimeout(t);
 	}
 
 	async loadSettings(): Promise<void> {
@@ -155,6 +176,139 @@ export default class FolioPlugin extends Plugin {
 
 	refreshView(view: MarkdownView): void {
 		this.syncHeaderButtons(view);
+		const s = view.file ? this.docSettings(view.file) : null;
+		applyPageStyle(view, s);
+		this.syncToolbar(view, s);
+	}
+
+	// --- Doc mode (phase 1) ---------------------------------------------------
+
+	private pageDefaults(): PageSettings {
+		const d = this.settings;
+		return { zoom: d.defaultZoom, width: d.defaultWidth, font: d.defaultFont, fontSize: d.defaultFontSize, theme: d.defaultTheme };
+	}
+
+	docSettings(file: TFile): DocSettings {
+		const o = this.optimistic.get(file.path);
+		if (o && Date.now() - o.at < 5000) return o.s;
+		const fm = this.app.metadataCache.getFileCache(file)?.frontmatter as Record<string, unknown> | undefined;
+		return readDocSettings(fm, this.pageDefaults());
+	}
+
+	private syncToolbar(view: MarkdownView, s: DocSettings | null): void {
+		let tb = this.toolbars.get(view);
+		if (!s?.enabled) {
+			if (tb) {
+				tb.destroy();
+				this.toolbars.delete(view);
+			}
+			return;
+		}
+		if (!tb || !view.contentEl.contains(tb.el)) {
+			tb?.destroy();
+			tb = new DocToolbar(this.app, view, {
+				update: (patch) => view.file && this.updateDocSettings(view.file, patch),
+				addComment: () => this.addComment(view),
+				copyForLLM: () => void copyForLLM(this, view),
+				copyOptions: () => new CopyOptionsModal(this, view).open(),
+				toggleResolved: () => void this.toggleShowResolved(),
+				showResolved: () => this.settings.showResolved,
+				openSidebar: () => {
+					this.lastMarkdown = view;
+					void this.activateSidebar();
+				},
+			});
+			this.toolbars.set(view, tb);
+		}
+		tb.update(s);
+		// forget toolbars of closed views
+		for (const v of [...this.toolbars.keys()]) if (!this.markdownViews().includes(v)) {
+			this.toolbars.get(v)?.destroy();
+			this.toolbars.delete(v);
+		}
+	}
+
+	/** Apply a change immediately, then write it to the note's frontmatter (debounced). */
+	updateDocSettings(file: TFile, patch: Partial<DocSettings>, delay = 0): void {
+		const next = { ...this.docSettings(file), ...patch };
+		this.optimistic.set(file.path, { s: next, at: Date.now() });
+		for (const v of this.markdownViews()) if (v.file?.path === file.path) this.refreshView(v);
+		this.pendingPatch.set(file.path, { ...(this.pendingPatch.get(file.path) ?? {}), ...patch });
+		window.clearTimeout(this.writeTimers.get(file.path));
+		this.writeTimers.set(
+			file.path,
+			window.setTimeout(() => {
+				this.writeTimers.delete(file.path);
+				const p = this.pendingPatch.get(file.path) ?? {};
+				this.pendingPatch.delete(file.path);
+				void this.app.fileManager
+					.processFrontMatter(file, (fm: Record<string, unknown>) => {
+						Object.assign(fm, toFrontmatter(p));
+						if (p.font === '') delete fm[KEYS.font];
+					})
+					.catch((e: Error) => new Notice(`Folio: could not update the frontmatter (${e.message}).`));
+			}, delay),
+		);
+	}
+
+	private resetDocKey(file: TFile, key: string): void {
+		this.optimistic.delete(file.path);
+		void this.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
+			delete fm[key];
+		});
+	}
+
+	async toggleDocMode(file: TFile): Promise<void> {
+		this.optimistic.delete(file.path);
+		let on = false;
+		await this.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
+			if (readDocSettings(fm).enabled) delete fm[KEYS.enabled];
+			else {
+				fm[KEYS.enabled] = true;
+				on = true;
+			}
+		});
+		new Notice(on ? 'Folio: doc mode on' : 'Folio: doc mode off');
+	}
+
+	private registerDocModeCommands(): void {
+		const withFile = (needDoc: boolean, fn: (file: TFile, s: DocSettings, view: MarkdownView) => void) => (checking: boolean) => {
+			const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+			const file = view?.file;
+			if (!view || !file) return false;
+			const s = this.docSettings(file);
+			if (needDoc && !s.enabled) return false;
+			if (!checking) fn(file, s, view);
+			return true;
+		};
+		this.addCommand({ id: 'toggle-doc-mode', name: 'Toggle doc mode for this note', checkCallback: withFile(false, (f) => void this.toggleDocMode(f)) });
+		this.addCommand({ id: 'zoom-in', name: 'Zoom in (doc mode)', checkCallback: withFile(true, (f, s) => this.updateDocSettings(f, { zoom: stepZoom(s.zoom, 1) }, 300)) });
+		this.addCommand({ id: 'zoom-out', name: 'Zoom out (doc mode)', checkCallback: withFile(true, (f, s) => this.updateDocSettings(f, { zoom: stepZoom(s.zoom, -1) }, 300)) });
+		this.addCommand({ id: 'zoom-reset', name: 'Reset zoom (doc mode)', checkCallback: withFile(true, (f) => this.resetDocKey(f, KEYS.zoom)) });
+		this.addCommand({ id: 'font-bigger', name: 'Increase font size (doc mode)', checkCallback: withFile(true, (f, s) => this.updateDocSettings(f, { fontSize: stepFontSize(s.fontSize, 1) }, 300)) });
+		this.addCommand({ id: 'font-smaller', name: 'Decrease font size (doc mode)', checkCallback: withFile(true, (f, s) => this.updateDocSettings(f, { fontSize: stepFontSize(s.fontSize, -1) }, 300)) });
+		this.addCommand({
+			id: 'cycle-page-theme',
+			name: 'Change page theme (app / light / dark)',
+			checkCallback: withFile(true, (f, s) => {
+				const order: ThemeChoice[] = ['app', 'light', 'dark'];
+				this.updateDocSettings(f, { theme: order[(order.indexOf(s.theme) + 1) % 3] });
+			}),
+		});
+	}
+
+	/** Ctrl+Alt+scroll zooms a doc-mode note. */
+	private onWheel(e: WheelEvent): void {
+		if (!e.ctrlKey || !e.altKey || !this.settings.ctrlAltScrollZoom) return;
+		const target = e.target as HTMLElement | null;
+		const view = this.markdownViews().find((v) => target && v.contentEl.contains(target));
+		const file = view?.file;
+		if (!view || !file) return;
+		const s = this.docSettings(file);
+		if (!s.enabled) return;
+		e.preventDefault();
+		const zoom = stepZoom(s.zoom, e.deltaY < 0 ? 1 : -1);
+		if (zoom !== s.zoom) this.updateDocSettings(file, { zoom }, 500);
 	}
 
 	// --- Copy for LLM -------------------------------------------------------
