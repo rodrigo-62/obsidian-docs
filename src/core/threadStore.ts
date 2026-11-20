@@ -5,7 +5,7 @@
 //   -->
 //
 // `-->` (and `--!>`) never appear literally inside the block: they are written
-// as `-->`, a valid JSON escape that JSON.parse decodes by itself.
+// as `--\u003e`, a valid JSON escape that JSON.parse decodes by itself.
 
 import type { Comment, Thread, Threads } from './model';
 import { codeAndFrontmatterRanges, inRanges } from './mdScan';
