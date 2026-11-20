@@ -69,9 +69,9 @@ for (let p = 0; p < 100; p++) {
 const json = JSON.stringify(threads, null, 2).replace(/--(!?)>/g, '--$1\\u003e');
 write(
 	'Performance — very long note.md',
-	`---\nfolio: true\n---\n\n# Performance — very long note\n\n(${words_total} words, 100 threads, every 7th resolved.)\n\n` +
+	`---\ndocs: true\n---\n\n# Performance — very long note\n\n(${words_total} words, 100 threads, every 7th resolved.)\n\n` +
 		paragraphs.join('\n\n') +
-		`\n\n<!--folio:threads\n${json}\n-->\n`,
+		`\n\n<!--docs:threads\n${json}\n-->\n`,
 );
 
 // ---- A tiny PNG (64x40, two-colour) -------------------------------------------

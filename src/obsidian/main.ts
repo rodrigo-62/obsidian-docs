@@ -9,11 +9,12 @@ import { ComposerModal } from './composer';
 import { marginContext, marginExtensions, marginIsWide, marginPlugin, refreshMargin, type MarginContext } from './margin/marginView';
 import { CommentsSidebarView, SIDEBAR_VIEW } from './sidebarView';
 import { clearReadingCache, makeReadingPostProcessor } from './reading';
-import { KEYS, readDocSettings, stepFontSize, stepZoom, toFrontmatter, type DocSettings, type PageSettings, type ThemeChoice } from '../core/docSettings';
+import { KEYS, LEGACY_KEYS, hasLegacyKeys, migrateFrontmatter, readDocSettings, stepFontSize, stepZoom, toFrontmatter, type DocSettings, type PageSettings, type ThemeChoice } from '../core/docSettings';
 import { applyPageStyle, clearAllPageStyles } from './pageStyle';
 import { DocToolbar, THEME_ORDER } from './toolbar';
 import { clampTweak } from '../core/paperPalette';
 import { footnoteAction } from '../core/footnotes';
+import { BLOCK_OPEN, LEGACY_BLOCK_OPENS, findThreadBlock } from '../core/threadStore';
 import { adjacentHeading } from '../core/headings';
 
 export default class FolioPlugin extends Plugin {
@@ -276,18 +277,21 @@ export default class FolioPlugin extends Plugin {
 				this.pendingPatch.delete(file.path);
 				void this.app.fileManager
 					.processFrontMatter(file, (fm: Record<string, unknown>) => {
+						migrateFrontmatter(fm);
 						Object.assign(fm, toFrontmatter(p));
 						if (p.font === '') delete fm[KEYS.font];
 					})
-					.catch((e: Error) => new Notice(`Folio: could not update the frontmatter (${e.message}).`));
+					.catch((e: Error) => new Notice(`Docs: could not update the frontmatter (${e.message}).`));
 			}, delay),
 		);
 	}
 
-	private resetDocKey(file: TFile, key: string): void {
+	private resetDocKey(file: TFile, key: keyof typeof KEYS): void {
 		this.optimistic.delete(file.path);
 		void this.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
-			delete fm[key];
+			migrateFrontmatter(fm);
+			delete fm[KEYS[key]];
+			delete fm[LEGACY_KEYS[key]];
 		});
 	}
 
@@ -297,7 +301,7 @@ export default class FolioPlugin extends Plugin {
 		const base = parent.isRoot() ? '' : `${parent.path}/`;
 		let path = normalizePath(`${base}Untitled doc.md`);
 		for (let i = 1; this.app.vault.getAbstractFileByPath(path); i++) path = normalizePath(`${base}Untitled doc ${i}.md`);
-		const file = await this.app.vault.create(path, '---\nfolio: true\n---\n\n');
+		const file = await this.app.vault.create(path, `---\n${KEYS.enabled}: true\n---\n\n`);
 		const leaf = this.app.workspace.getLeaf(false);
 		await leaf.openFile(file, { active: true, state: { mode: 'source' }, eState: { rename: 'all' } });
 	}
@@ -306,16 +310,47 @@ export default class FolioPlugin extends Plugin {
 		this.optimistic.delete(file.path);
 		let on = false;
 		await this.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
+			migrateFrontmatter(fm);
 			if (readDocSettings(fm).enabled) delete fm[KEYS.enabled];
 			else {
 				fm[KEYS.enabled] = true;
 				on = true;
 			}
 		});
-		new Notice(on ? 'Folio: doc mode on' : 'Folio: doc mode off');
+		new Notice(on ? 'Docs: doc mode on' : 'Docs: doc mode off');
+	}
+
+	/**
+	 * Convert every note from the old Folio format: `folio*` frontmatter keys become
+	 * `docs*`, and `<!--folio:threads` becomes `<!--docs:threads`. Notes keep working
+	 * without this (old names are still read); it just tidies the files in one go.
+	 */
+	async upgradeLegacyNotes(): Promise<void> {
+		let keys = 0;
+		let blocks = 0;
+		for (const file of this.app.vault.getMarkdownFiles()) {
+			const fm = this.app.metadataCache.getFileCache(file)?.frontmatter as Record<string, unknown> | undefined;
+			if (hasLegacyKeys(fm)) {
+				await this.app.fileManager.processFrontMatter(file, (f: Record<string, unknown>) => {
+					if (migrateFrontmatter(f)) keys++;
+				});
+			}
+			const text = await this.app.vault.cachedRead(file);
+			if (!LEGACY_BLOCK_OPENS.some((o) => text.includes(o))) continue;
+			await this.app.vault.process(file, (md) => {
+				const b = findThreadBlock(md);
+				if (!b?.legacy) return md;
+				const opener = LEGACY_BLOCK_OPENS.find((o) => md.startsWith(o, b.from))!;
+				blocks++;
+				return md.slice(0, b.from) + BLOCK_OPEN + md.slice(b.from + opener.length);
+			});
+		}
+		clearReadingCache();
+		new Notice(keys + blocks ? `Docs: upgraded ${keys} note${keys === 1 ? '' : 's'} with old settings keys and ${blocks} with old comment blocks.` : 'Docs: no notes in the old Folio format.');
 	}
 
 	private registerDocModeCommands(): void {
+		this.addCommand({ id: 'upgrade-folio-notes', name: 'Upgrade notes from the old Folio format', callback: () => void this.upgradeLegacyNotes() });
 		const withFile = (needDoc: boolean, fn: (file: TFile, s: DocSettings, view: MarkdownView) => void) => (checking: boolean) => {
 			const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 			const file = view?.file;
@@ -329,7 +364,7 @@ export default class FolioPlugin extends Plugin {
 		this.addCommand({ id: 'toggle-doc-mode', name: 'Toggle doc mode for this note', checkCallback: withFile(false, (f) => void this.toggleDocMode(f)) });
 		this.addCommand({ id: 'zoom-in', name: 'Zoom in (doc mode)', checkCallback: withFile(true, (f, s) => this.updateDocSettings(f, { zoom: stepZoom(s.zoom, 1) }, 300)) });
 		this.addCommand({ id: 'zoom-out', name: 'Zoom out (doc mode)', checkCallback: withFile(true, (f, s) => this.updateDocSettings(f, { zoom: stepZoom(s.zoom, -1) }, 300)) });
-		this.addCommand({ id: 'zoom-reset', name: 'Reset zoom (doc mode)', checkCallback: withFile(true, (f) => this.resetDocKey(f, KEYS.zoom)) });
+		this.addCommand({ id: 'zoom-reset', name: 'Reset zoom (doc mode)', checkCallback: withFile(true, (f) => this.resetDocKey(f, 'zoom')) });
 		this.addCommand({ id: 'font-bigger', name: 'Increase font size (doc mode)', checkCallback: withFile(true, (f, s) => this.updateDocSettings(f, { fontSize: stepFontSize(s.fontSize, 1) }, 300)) });
 		this.addCommand({ id: 'font-smaller', name: 'Decrease font size (doc mode)', checkCallback: withFile(true, (f, s) => this.updateDocSettings(f, { fontSize: stepFontSize(s.fontSize, -1) }, 300)) });
 		this.addCommand({
@@ -441,7 +476,7 @@ export default class FolioPlugin extends Plugin {
 			withCm((cm) => {
 				const h = adjacentHeading(cm.state.doc.toString(), cm.state.selection.main.head, dir);
 				if (!h) {
-					new Notice(dir > 0 ? 'Folio: no heading below.' : 'Folio: no heading above.');
+					new Notice(dir > 0 ? 'Docs: no heading below.' : 'Docs: no heading above.');
 					return;
 				}
 				cm.dispatch({ selection: { anchor: h.text }, effects: EditorView.scrollIntoView(h.text, { y: 'start', yMargin: 60 }), userEvent: 'select' });
@@ -478,7 +513,7 @@ export default class FolioPlugin extends Plugin {
 			editorCheckCallback: withCm((cm, view) => {
 				const id = cm.state.field(folioField).ui.activeId;
 				if (!id) {
-					new Notice('Folio: no active comment. Put the cursor in commented text first.');
+					new Notice('Docs: no active comment. Put the cursor in commented text first.');
 					return;
 				}
 				const card = marginIsWide(cm) ? cm.plugin(marginPlugin)?.card(id) : undefined;
@@ -495,7 +530,7 @@ export default class FolioPlugin extends Plugin {
 			editorCheckCallback: withCm((cm) => {
 				const id = cm.state.field(folioField).ui.activeId;
 				if (id) ops.resolve(cm, id, true);
-				else new Notice('Folio: no active comment.');
+				else new Notice('Docs: no active comment.');
 			}),
 		});
 	}
@@ -505,7 +540,7 @@ export default class FolioPlugin extends Plugin {
 		const st = cm.state.field(folioField);
 		const ids = st.doc.anchored.filter((id) => !st.doc.threads[id]!.resolved || st.ui.showResolved);
 		if (!ids.length) {
-			new Notice('Folio: no comments in this note.');
+			new Notice('Docs: no comments in this note.');
 			return;
 		}
 		const pos = (id: string) => st.doc.markers.anchors.get(id)!.textFrom;
@@ -524,7 +559,7 @@ export default class FolioPlugin extends Plugin {
 	addComment(view: MarkdownView): void {
 		const cm = editorViewOf(view);
 		if (!cm || view.getMode() !== 'source') {
-			new Notice('Folio: switch to Live Preview or Source mode to add a comment.');
+			new Notice('Docs: switch to Live Preview or Source mode to add a comment.');
 			return;
 		}
 		const draft = startDraft(cm);
@@ -547,7 +582,7 @@ export default class FolioPlugin extends Plugin {
 	async toggleShowResolved(): Promise<void> {
 		this.settings.showResolved = !this.settings.showResolved;
 		await this.saveSettings();
-		new Notice(this.settings.showResolved ? 'Folio: showing resolved comments' : 'Folio: hiding resolved comments');
+		new Notice(this.settings.showResolved ? 'Docs: showing resolved comments' : 'Docs: hiding resolved comments');
 	}
 
 	private registerCommentCommands(): void {
@@ -579,7 +614,7 @@ export default class FolioPlugin extends Plugin {
 				if (!cm) return false;
 				if (!checking) {
 					const n = repairMarkers(cm);
-					new Notice(n ? `Folio: removed ${n} damaged marker${n === 1 ? '' : 's'}.` : 'Folio: no damaged markers found.');
+					new Notice(n ? `Docs: removed ${n} damaged marker${n === 1 ? '' : 's'}.` : 'Docs: no damaged markers found.');
 				}
 				return true;
 			},

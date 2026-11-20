@@ -260,7 +260,7 @@ describe('private comments, code, embeds', () => {
 	});
 
 	it('inlines embedded notes, cleaned of their own markup', () => {
-		const embedded = `---\nfolio: true\n---\n# Embedded\n\nIts ${o('e')}own${c('e')} text %%hidden%%. ![[deeper]]\n\n## Part\n\nPart text.\n\n${serializeThreadBlock({ e: { quote: 'own', created: '', resolved: false, comments: [] } })}\n`;
+		const embedded = `---\ndocs: true\n---\n# Embedded\n\nIts ${o('e')}own${c('e')} text %%hidden%%. ![[deeper]]\n\n## Part\n\nPart text.\n\n${serializeThreadBlock({ e: { quote: 'own', created: '', resolved: false, comments: [] } })}\n`;
 		const md = 'Before\n\n![[Embedded note]]\n\nMiddle\n\n![[Embedded note#Part]]\n\n![[missing]]';
 		const { text } = exportForLLM(md, {}, { resolveEmbed: (t) => (t === 'Embedded note' ? embedded : null) });
 		expect(text).toContain('<embed source="Embedded note">\n# Embedded\n\nIts own text . [embed: deeper]\n\n## Part\n\nPart text.\n</embed>');
@@ -297,7 +297,7 @@ describe('private comments, code, embeds', () => {
 describe('frontmatter and summary', () => {
 	it('removes folio keys including multi-line values', () => {
 		expect(cleanFrontmatter('---\nfolio: true\nfolio-font: "X"\ntitle: T\nfolio-list:\n  - a\n  - b\ntags:\n  - x\n---\n')).toBe('---\ntitle: T\ntags:\n  - x\n---\n');
-		expect(cleanFrontmatter('---\nfolio: true\n---\n')).toBe('');
+		expect(cleanFrontmatter('---\ndocs: true\n---\n')).toBe('');
 	});
 
 	it('formats the notice', () => {

@@ -69,7 +69,7 @@ function readDoc(text: Text, prev: DocComments | null): DocComments {
 function hiddenRange(doc: DocComments, length: number): { from: number; to: number } | null {
 	const b = doc.block;
 	if (!b || !doc.ok) return null;
-	// Hide "\n<!--folio:threads…-->" plus anything after it (whitespace only, normally).
+	// Hide "\n<!--docs:threads…-->" plus anything after it (whitespace only, normally).
 	const from = b.from > 0 ? b.from - 1 : 0;
 	const to = b.trailing ? b.to : length;
 	return { from, to };

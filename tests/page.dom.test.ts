@@ -17,7 +17,7 @@ const fakeView = () => {
 describe('page style', () => {
 	it('sets classes and variables on the view, not on body', () => {
 		const v = fakeView();
-		applyPageStyle(v, readDocSettings({ folio: true, 'folio-zoom': 150, 'folio-font-size': 12, 'folio-width': 40, 'folio-font': 'Tinos', 'folio-theme': 'dark' }));
+		applyPageStyle(v, readDocSettings({ docs: true, 'docs-zoom': 150, 'docs-font-size': 12, 'docs-width': 40, 'docs-font': 'Tinos', 'docs-theme': 'dark' }));
 		const el = (v as unknown as { contentEl: HTMLElement }).contentEl;
 		expect(el.classList.contains('folio-doc')).toBe(true);
 		expect(el.classList.contains('folio-theme-dark')).toBe(true);
@@ -31,14 +31,14 @@ describe('page style', () => {
 	it('two views can differ, and turning doc mode off cleans up', () => {
 		const a = fakeView();
 		const b = fakeView();
-		applyPageStyle(a, readDocSettings({ folio: true, 'folio-theme': 'light' }));
-		applyPageStyle(b, readDocSettings({ folio: true, 'folio-theme': 'dark', 'folio-zoom': 75 }));
+		applyPageStyle(a, readDocSettings({ docs: true, 'docs-theme': 'light' }));
+		applyPageStyle(b, readDocSettings({ docs: true, 'docs-theme': 'dark', 'docs-zoom': 75 }));
 		const ea = (a as unknown as { contentEl: HTMLElement }).contentEl;
 		const eb = (b as unknown as { contentEl: HTMLElement }).contentEl;
 		expect(ea.classList.contains('folio-theme-light')).toBe(true);
 		expect(eb.classList.contains('folio-theme-dark')).toBe(true);
 		expect(ea.style.getPropertyValue('--font-preferred-size')).not.toBe(eb.style.getPropertyValue('--font-preferred-size'));
-		applyPageStyle(a, readDocSettings({ folio: false }));
+		applyPageStyle(a, readDocSettings({ docs: false }));
 		expect(ea.className).toBe('view-content');
 		expect(ea.style.getPropertyValue('--font-preferred-size')).toBe('');
 		clearAllPageStyles();
@@ -67,7 +67,7 @@ describe('toolbar', () => {
 			commentFontSize: () => 0,
 			setCommentFontSize: () => undefined,
 		});
-		tb.update(readDocSettings({ folio: true, 'folio-zoom': 125, 'folio-font-size': 13, 'folio-theme': 'light' }));
+		tb.update(readDocSettings({ docs: true, 'docs-zoom': 125, 'docs-font-size': 13, 'docs-theme': 'light' }));
 		const el = (v as unknown as { contentEl: HTMLElement }).contentEl;
 		expect(el.firstElementChild).toBe(tb.el);
 		const zoom = tb.el.querySelector('.folio-tb-zoom') as HTMLSelectElement;

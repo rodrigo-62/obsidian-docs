@@ -4,20 +4,20 @@ import { DEFAULT_DOC_SETTINGS, pageMetrics, readDocSettings, stepFontSize, stepZ
 describe('docSettings', () => {
 	it('reads the spec example', () => {
 		expect(
-			readDocSettings({ folio: true, 'folio-zoom': 100, 'folio-width': 42, 'folio-font': 'Times New Roman', 'folio-font-size': 15, 'folio-theme': 'light' }),
+			readDocSettings({ docs: true, 'docs-zoom': 100, 'docs-width': 42, 'docs-font': 'Times New Roman', 'docs-font-size': 15, 'docs-theme': 'light' }),
 		).toEqual({ enabled: true, zoom: 100, width: 42, font: 'Times New Roman', fontSize: 15, theme: 'light' });
 	});
 
 	it('falls back to defaults for missing or invalid keys', () => {
 		expect(readDocSettings(undefined)).toEqual({ enabled: false, ...DEFAULT_DOC_SETTINGS });
-		expect(readDocSettings({ folio: 'yes', 'folio-zoom': 'abc', 'folio-theme': 'purple' })).toMatchObject({ enabled: true, zoom: 100, theme: 'app' });
+		expect(readDocSettings({ docs: 'yes', 'docs-zoom': 'abc', 'docs-theme': 'purple' })).toMatchObject({ enabled: true, zoom: 100, theme: 'app' });
 		const d = { ...DEFAULT_DOC_SETTINGS, zoom: 125, font: 'Tinos' };
 		expect(readDocSettings({}, d)).toMatchObject({ zoom: 125, font: 'Tinos' });
 	});
 
 	it('accepts strings with units and clamps', () => {
-		expect(readDocSettings({ 'folio-zoom': '150%', 'folio-font-size': '14pt', 'folio-width': '30em' })).toMatchObject({ zoom: 150, fontSize: 14, width: 30 });
-		expect(readDocSettings({ 'folio-zoom': 1000, 'folio-width': 1, 'folio-font-size': 0 })).toMatchObject({ zoom: 200, width: 20, fontSize: 6 });
+		expect(readDocSettings({ 'docs-zoom': '150%', 'docs-font-size': '14pt', 'docs-width': '30em' })).toMatchObject({ zoom: 150, fontSize: 14, width: 30 });
+		expect(readDocSettings({ 'docs-zoom': 1000, 'docs-width': 1, 'docs-font-size': 0 })).toMatchObject({ zoom: 200, width: 20, fontSize: 6 });
 	});
 
 	it('steps zoom through presets', () => {
@@ -44,6 +44,6 @@ describe('docSettings', () => {
 	});
 
 	it('maps patches to frontmatter keys', () => {
-		expect(toFrontmatter({ zoom: 125, theme: 'dark' })).toEqual({ 'folio-zoom': 125, 'folio-theme': 'dark' });
+		expect(toFrontmatter({ zoom: 125, theme: 'dark' })).toEqual({ 'docs-zoom': 125, 'docs-theme': 'dark' });
 	});
 });

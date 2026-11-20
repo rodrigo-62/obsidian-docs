@@ -39,7 +39,7 @@ describe('folioField', () => {
 	});
 
 	it('does not hide a damaged block', () => {
-		const s = EditorState.create({ doc: 'x\n\n<!--folio:threads\n{bad\n-->\n', extensions: [folioField] });
+		const s = EditorState.create({ doc: 'x\n\n<!--docs:threads\n{bad\n-->\n', extensions: [folioField] });
 		expect(s.field(folioField).hidden).toBeNull();
 		expect(s.field(folioField).doc.ok).toBe(false);
 	});
@@ -172,7 +172,7 @@ describe('edit filter', () => {
 	it('Select all + delete keeps the hidden thread block', () => {
 		const s = mk(`ab${o('x')}cd${c('x')}ef`);
 		const s2 = apply(s, { changes: { from: 0, to: s.doc.length }, userEvent: 'delete.selection' });
-		expect(s2.doc.toString().startsWith('\n<!--folio:threads')).toBe(true);
+		expect(s2.doc.toString().startsWith('\n<!--docs:threads')).toBe(true);
 		expect(store.read(s2.doc.toString()).threads.x).toBeDefined();
 		expect(s2.field(folioField).doc.detached).toEqual(['x']);
 	});

@@ -63,7 +63,7 @@ export class FolioSettingTab extends PluginSettingTab {
 		new Setting(containerEl).setName('Page defaults').setHeading();
 		containerEl.createEl('p', {
 			cls: 'setting-item-description',
-			text: 'Used in doc mode when a note does not set its own value. A note stores its own values in folio-* frontmatter keys (written by the toolbar).',
+			text: 'Used in doc mode when a note does not set its own value. A note stores its own values in docs-* frontmatter keys (written by the toolbar).',
 		});
 		new Setting(containerEl)
 			.setName('Zoom (%)')

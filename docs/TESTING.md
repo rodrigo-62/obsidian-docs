@@ -149,3 +149,10 @@ Make the Obsidian window wide (≥ 1100 px editor pane). Open *Essays/A Short Hi
 - [ ] Light or sepia page in a dark app: the toolbar dropdown arrows (zoom, font, width, Aa) are dark.
 - [ ] The active card steps only slightly towards the page. In dark mode its outline is a soft pastel gold.
 - [ ] `npm run update-vaults` updates `/home/parrhasius/vault` (with Hot Reload there it reloads by itself; otherwise toggle Folio off and on).
+
+## Rename to Docs (F5)
+
+- [ ] Restart Obsidian on the test vault. Settings → Community plugins lists **Docs** (not Folio), enabled, with your settings kept (e.g. comment size). Commands read "Docs: …".
+- [ ] The test notes (still in the old Folio format) look and work as before: page, toolbar, comments.
+- [ ] Command palette → **Docs: Upgrade notes from the old Folio format**. A notice reports how many notes were upgraded; the notes' properties now say `docs`, `docs-zoom`, …
+- [ ] Your other vault: `npm run update-vaults`, then restart Obsidian there. "Docs" is enabled in place of "Folio" with your settings, the old Folio plugin is gone, and your notes work. Run the upgrade command there too, whenever you like.

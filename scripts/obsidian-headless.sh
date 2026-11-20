@@ -13,9 +13,11 @@ rm -rf "$VAULT"
 cp -r "$ROOT/test-vault" "$VAULT"
 rm -f "$VAULT/.obsidian/workspace.json"
 # Link only the build files (so rebuilds are picked up); settings (data.json) stay a private copy.
+mkdir -p "$VAULT/.obsidian/plugins/docs"
+rm -rf "$VAULT/.obsidian/plugins/folio"
 for f in main.js styles.css manifest.json; do
-	rm -f "$VAULT/.obsidian/plugins/folio/$f"
-	ln -s "$ROOT/test-vault/.obsidian/plugins/folio/$f" "$VAULT/.obsidian/plugins/folio/$f"
+	rm -f "$VAULT/.obsidian/plugins/docs/$f"
+	ln -s "$ROOT/test-vault/.obsidian/plugins/docs/$f" "$VAULT/.obsidian/plugins/docs/$f"
 done
 mkdir -p "$PROFILE/obsidian"
 # Optional: OBSIDIAN_ASAR=/path/to/obsidian-1.x.y.asar runs that (newer) Obsidian version,

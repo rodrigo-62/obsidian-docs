@@ -1,4 +1,4 @@
-# Folio — Obsidian plugin
+# Docs (obsidian-docs) — Obsidian plugin, formerly "Folio"
 
 **`docs/SPEC.md` is the source of truth.** Read it before changing behaviour. Decisions that deviate from or fill gaps in the spec are in `docs/DECISIONS.md` (add new ones there with a reason). Manual UI checks for the user go in `docs/TESTING.md`, grouped by phase. Prior-art notes are in `docs/RESEARCH.md`.
 
@@ -14,7 +14,7 @@
 
 ## Commands (run inside `nix develop`)
 
-- `npm run dev`: watch build into `test-vault/.obsidian/plugins/folio/` (Hot Reload picks it up)
+- `npm run dev`: watch build into `test-vault/.obsidian/plugins/docs/` (Hot Reload picks it up)
 - `npm run build`: typecheck plus production build (also copied into the test vault)
 - `npm test`: vitest for `src/core/`
 - `npm run vault:reset`: regenerate the sample notes
@@ -23,10 +23,12 @@
 
 You can't see the user's Obsidian, but you can run your own: `scripts/obsidian-headless.sh` (run in the background; Xvfb, isolated profile and a copy of the test vault in `.scratch/`), then `nix develop -c node scripts/cdp.mjs q.js [shot.png]`, where `q.js` is an async function body returning JSON. Turn plugins on with `await app.plugins.setEnable(true)`, read console errors in the output, and Read the PNG to look at it. Stop it with `pkill -f "remote-debugging-por[t]=9333"` (the bracket keeps pkill from matching its own shell). **Do this before telling the user something works.** Class field names in Obsidian subclasses must not shadow Obsidian's (`titleEl`, `headerEl`, `contentEl`, `app`, `leaf`, `scope`, …).
 
-## Storage format (summary; details in SPEC §5.3 and DECISIONS D0.2)
+## Storage format (summary; details in SPEC §5.3 and DECISIONS D0.2, renamed in F5)
+
+- Plugin id `docs`, name "Docs". Frontmatter keys `docs`, `docs-zoom`, `docs-width`, `docs-font`, `docs-font-size`, `docs-theme`. Legacy `folio*` keys and `<!--folio:threads` are still read (see `LEGACY_KEYS`, `LEGACY_BLOCK_OPENS`). Internal code and CSS names keep the `folio` prefix on purpose.
 
 - Anchors: `<!--c:ID-->text<!--/c:ID-->`, ID `[a-z0-9]+` (generated: 4 chars). If a marker starts a non-heading line's text, a U+200B guard goes before it.
-- Threads: a single `<!--folio:threads\n{pretty JSON}\n-->` block, always last in the file. `-->` is written as `--\u003e`.
+- Threads: a single `<!--docs:threads\n{pretty JSON}\n-->` block, always last in the file. `-->` is written as `--\u003e`.
 - Comments form a tree (`parent`) and are displayed flat, with "↳ re:" chips.
 
 ## Current status / next step
@@ -38,4 +40,5 @@ You can't see the user's Obsidian, but you can run your own: `scripts/obsidian-h
 - **Feedback round 1 done** (see DECISIONS F1.x): Ctrl+Enter via keymap Scope, replies default to the thread root, chip flash fix, no scroll jump, strict activation, sidebar robustness, "Copy" label, Ctrl+Alt+F footnotes (`core/footnotes.ts`), paper light/sepia/dark with sliders (`core/paperPalette.ts`), page border and darker surround. 192 tests.
 - **Feedback rounds 1–3 done** (DECISIONS F1–F3). Round 3: empty-line caret, comment text size, activation on any cursor move (not selections), active card pinned to anchor, comment menu, Google-Docs-like focus, heading navigation, `--font-text-size` for older Obsidian. 197 tests.
 - **Feedback round 4 done** (DECISIONS F4): instant comment size, crisper cards (top instead of transform), page-themed dropdown arrows, smaller active shift, pastel dark outline, `npm run update-vaults`.
+- **Rename done** (DECISIONS F5): Folio → Docs (`docs`), with legacy reading, an upgrade command, and install-script migration. 202 tests.
 - **Next:** wait for the user's feedback. To check UI against the user's Obsidian version, run the headless script with `OBSIDIAN_ASAR=.scratch/obsidian-1.15.1.asar` (a copy; re-copy from `~/.config/obsidian/obsidian-<ver>.asar` if the user updates).

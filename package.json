@@ -1,8 +1,8 @@
 {
-	"name": "folio",
+	"name": "obsidian-docs",
 	"version": "0.1.0",
 	"private": true,
-	"description": "Folio: Google-Docs-like doc mode for Obsidian",
+	"description": "Docs: Google-Docs-like doc mode for Obsidian",
 	"main": "main.js",
 	"type": "module",
 	"scripts": {

@@ -1,6 +1,6 @@
 // Read/write the end-of-file thread block (SPEC §5.3):
 //
-//   <!--folio:threads
+//   <!--docs:threads
 //   { ...pretty JSON, one thread per key... }
 //   -->
 //
@@ -10,7 +10,9 @@
 import type { Comment, Thread, Threads } from './model';
 import { codeAndFrontmatterRanges, inRanges } from './mdScan';
 
-export const BLOCK_OPEN = '<!--folio:threads';
+export const BLOCK_OPEN = '<!--docs:threads';
+/** Openers written by earlier versions (the plugin was called Folio). Read, and replaced on the next write. */
+export const LEGACY_BLOCK_OPENS = ['<!--folio:threads'];
 export const BLOCK_CLOSE = '-->';
 
 /** A text change in original-document coordinates. */
@@ -21,7 +23,7 @@ export interface Change {
 }
 
 export interface ThreadBlock {
-	/** Start of the `<!--folio:threads` line. */
+	/** Start of the `<!--docs:threads` line. */
 	from: number;
 	/** End of the closing `-->`. */
 	to: number;
@@ -31,24 +33,39 @@ export interface ThreadBlock {
 	contentEnd: number;
 	/** True if non-whitespace text follows the block (it should be the last thing in the file). */
 	trailing: boolean;
+	/** Written with an old opener (`<!--folio:threads`); the next write upgrades it. */
+	legacy?: boolean;
 }
 
-/** Locate the thread block. If several exist (e.g. a merge), the last one wins. */
-export function findThreadBlock(md: string): ThreadBlock | null {
-	let idx = md.lastIndexOf(BLOCK_OPEN);
-	let code: ReturnType<typeof codeAndFrontmatterRanges> | null = null;
+/** Last valid occurrence of `opener` at a line start, outside code; -1 if none. */
+function lastOpener(md: string, opener: string, code: { get: () => ReturnType<typeof codeAndFrontmatterRanges> }): number {
+	let idx = md.lastIndexOf(opener);
 	while (idx !== -1) {
 		const atLineStart = idx === 0 || md[idx - 1] === '\n';
-		const after = md[idx + BLOCK_OPEN.length];
+		const after = md[idx + opener.length];
 		const wellFormed = after === '\n' || after === '\r' || after === ' ' || after === undefined;
-		if (atLineStart && wellFormed) {
-			code ??= codeAndFrontmatterRanges(md);
-			if (!inRanges(idx, code)) break;
+		if (atLineStart && wellFormed && !inRanges(idx, code.get())) return idx;
+		idx = idx === 0 ? -1 : md.lastIndexOf(opener, idx - 1);
+	}
+	return -1;
+}
+
+/** Locate the thread block (new or legacy opener). If several exist (e.g. a merge), the last one wins. */
+export function findThreadBlock(md: string): ThreadBlock | null {
+	let ranges: ReturnType<typeof codeAndFrontmatterRanges> | null = null;
+	const code = { get: () => (ranges ??= codeAndFrontmatterRanges(md)) };
+	let idx = -1;
+	let opener = BLOCK_OPEN;
+	for (const o of [BLOCK_OPEN, ...LEGACY_BLOCK_OPENS]) {
+		if (!md.includes(o)) continue;
+		const i = lastOpener(md, o, code);
+		if (i > idx) {
+			idx = i;
+			opener = o;
 		}
-		idx = idx === 0 ? -1 : md.lastIndexOf(BLOCK_OPEN, idx - 1);
 	}
 	if (idx === -1) return null;
-	const jsonStart = idx + BLOCK_OPEN.length;
+	const jsonStart = idx + opener.length;
 	const close = md.indexOf(BLOCK_CLOSE, jsonStart);
 	if (close === -1) return null;
 	let contentEnd = idx;
@@ -60,6 +77,7 @@ export function findThreadBlock(md: string): ThreadBlock | null {
 		json: md.slice(jsonStart, close).trim(),
 		contentEnd,
 		trailing: md.slice(to).trim().length > 0,
+		legacy: opener !== BLOCK_OPEN,
 	};
 }
 

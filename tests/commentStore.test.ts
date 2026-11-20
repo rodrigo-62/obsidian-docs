@@ -28,7 +28,7 @@ describe('inlineCommentStore', () => {
 		expect(r.ok).toBe(true);
 		if (!r.ok) return;
 		const out = applyChanges(md, r.changes);
-		expect(out.startsWith(`Alpha <!--c:${r.id}-->beta<!--/c:${r.id}-->\n\n<!--folio:threads`)).toBe(true);
+		expect(out.startsWith(`Alpha <!--c:${r.id}-->beta<!--/c:${r.id}-->\n\n<!--docs:threads`)).toBe(true);
 	});
 
 	it('round-trips create → reply → resolve → remove back to the original text', () => {
@@ -58,7 +58,7 @@ describe('inlineCommentStore', () => {
 	});
 
 	it('refuses to write when the thread block is damaged', () => {
-		const md = 'x\n\n<!--folio:threads\n{ broken\n-->\n';
+		const md = 'x\n\n<!--docs:threads\n{ broken\n-->\n';
 		const doc = store.read(md);
 		expect(doc.ok).toBe(false);
 		expect(() => store.write(md, {})).toThrow();

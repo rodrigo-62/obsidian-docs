@@ -41,7 +41,7 @@ describe('threadStore', () => {
 		t.k3f9!.comments[0]!.body = 'an arrow --> here and --!> there';
 		t.k3f9!.quote = 'quote with --> inside';
 		const block = serializeThreadBlock(t);
-		const inner = block.slice('<!--folio:threads'.length, block.length - 3);
+		const inner = block.slice('<!--docs:threads'.length, block.length - 3);
 		expect(inner).not.toContain('-->');
 		expect(inner).not.toContain('--!>');
 		expect(inner).toContain('--\\u003e');
@@ -59,7 +59,7 @@ describe('threadStore', () => {
 	});
 
 	it('reports malformed JSON without throwing', () => {
-		const md = 'text\n\n<!--folio:threads\n{ "a": \n-->\n';
+		const md = 'text\n\n<!--docs:threads\n{ "a": \n-->\n';
 		const r = parseThreads(md);
 		expect(r.ok).toBe(false);
 		if (!r.ok) expect(r.block.from).toBe(6);
@@ -71,12 +71,12 @@ describe('threadStore', () => {
 	});
 
 	it('ignores a block-like string inside a code block', () => {
-		const md = '```\n<!--folio:threads\n{}\n-->\n```\n';
+		const md = '```\n<!--docs:threads\n{}\n-->\n```\n';
 		expect(findThreadBlock(md)).toBeNull();
 	});
 
 	it('normalises missing fields leniently', () => {
-		const md = '<!--folio:threads\n{"x": {"comments": [{"body": "hi"}]}}\n-->';
+		const md = '<!--docs:threads\n{"x": {"comments": [{"body": "hi"}]}}\n-->';
 		const r = parseThreads(md);
 		expect(r.ok).toBe(true);
 		if (r.ok) {
@@ -96,14 +96,14 @@ describe('threadStore', () => {
 		it('appends a block after one blank line', () => {
 			const md = 'Hello world';
 			const out = applyChanges(md, planThreadWrite(md, sample()));
-			expect(out.startsWith('Hello world\n\n<!--folio:threads\n')).toBe(true);
+			expect(out.startsWith('Hello world\n\n<!--docs:threads\n')).toBe(true);
 			expect(out.endsWith('\n-->\n')).toBe(true);
 		});
 
 		it('appends correctly when the note ends with newlines', () => {
 			for (const md of ['Hello\n', 'Hello\n\n']) {
 				const out = applyChanges(md, planThreadWrite(md, sample()));
-				expect(out.startsWith('Hello\n\n<!--folio:threads')).toBe(true);
+				expect(out.startsWith('Hello\n\n<!--docs:threads')).toBe(true);
 			}
 		});
 
@@ -113,12 +113,12 @@ describe('threadStore', () => {
 			const out = applyChanges(md, planThreadWrite(md, next));
 			const r = parseThreads(out);
 			expect(r.ok && Object.keys(r.threads)).toEqual(['k3f9', 'zz']);
-			expect(out.startsWith('Hello\n\n<!--folio:threads')).toBe(true);
+			expect(out.startsWith('Hello\n\n<!--docs:threads')).toBe(true);
 		});
 
 		it('restores the blank line before the block', () => {
 			const md = 'Hello\ntyped\n' + serializeThreadBlock(sample()) + '\n';
-			expect(applyChanges(md, planThreadWrite(md, sample())).startsWith('Hello\ntyped\n\n<!--folio:threads')).toBe(true);
+			expect(applyChanges(md, planThreadWrite(md, sample())).startsWith('Hello\ntyped\n\n<!--docs:threads')).toBe(true);
 		});
 
 		it('removes the block when no threads remain', () => {
@@ -129,7 +129,7 @@ describe('threadStore', () => {
 		it('moves the block to the end if text was appended after it', () => {
 			const md = 'Hello\n\n' + serializeThreadBlock(sample()) + '\nappended later\n';
 			const out = applyChanges(md, planThreadWrite(md, sample()));
-			expect(out.startsWith('Hello\n\nappended later\n\n<!--folio:threads')).toBe(true);
+			expect(out.startsWith('Hello\n\nappended later\n\n<!--docs:threads')).toBe(true);
 			const b = findThreadBlock(out)!;
 			expect(b.trailing).toBe(false);
 		});

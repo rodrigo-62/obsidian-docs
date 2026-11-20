@@ -1,4 +1,4 @@
-# Folio
+# Docs (obsidian-docs)
 
 A "Google Docs mode" for Obsidian: per-note page view and page theme, margin comments with branching reply threads, and a structured **Copy for LLM** export. Desktop only.
 
@@ -9,7 +9,7 @@ A "Google Docs mode" for Obsidian: per-note page view and page theme, margin com
 ```sh
 nix develop          # node 22
 npm install
-npm run dev          # watch build → test-vault/.obsidian/plugins/folio/ (Hot Reload picks it up)
+npm run dev          # watch build → test-vault/.obsidian/plugins/docs/ (Hot Reload picks it up)
 npm test             # vitest (core + headless CodeMirror + happy-dom smoke tests)
 npm run build        # typecheck + production build (also copied into the test vault)
 npm run vault:reset  # regenerate the sample notes in test-vault/
@@ -25,9 +25,9 @@ npm run build
 npm run install-plugin -- /path/to/vault     # e.g. /home/parrhasius/vault
 ```
 
-Then in Obsidian: Settings → Community plugins → enable **Folio**.
+Then in Obsidian: Settings → Community plugins → enable **Docs**.
 
-**Automatic updates:** list your vaults in `.install-targets` (one path per line; it's gitignored) and run `npm run update-vaults`. It builds and installs into all of them. If the **Hot Reload** plugin is installed in a vault, Folio reloads there by itself (the script adds the `.hotreload` marker). Otherwise toggle Folio off and on. To update later, repeat these steps and toggle Folio off and on (or restart Obsidian). Keep a backup or git history of the vault: Folio writes comments into notes.
+**Automatic updates:** list your vaults in `.install-targets` (one path per line; it's gitignored) and run `npm run update-vaults`. It builds and installs into all of them. If the **Hot Reload** plugin is installed in a vault, Docs reloads there by itself (the script adds the `.hotreload` marker). Otherwise toggle Docs off and on. To update later, repeat these steps and toggle Docs off and on (or restart Obsidian). Keep a backup or git history of the vault: Docs writes comments into notes.
 
 ## Checking the real UI (dev)
 
@@ -35,4 +35,6 @@ Then in Obsidian: Settings → Community plugins → enable **Folio**.
 
 ## Storage format
 
-Comments live inside the note. Anchors are paired HTML comments around the commented text, `<!--c:k3f9-->text<!--/c:k3f9-->`, with a zero-width space in front when a marker starts a line. Threads are one pretty-printed JSON block at the end of the file (`<!--folio:threads … -->`). Page settings are flat `folio-*` frontmatter keys.
+Comments live inside the note. Anchors are paired HTML comments around the commented text, `<!--c:k3f9-->text<!--/c:k3f9-->`, with a zero-width space in front when a marker starts a line. Threads are one pretty-printed JSON block at the end of the file (`<!--docs:threads … -->`). Page settings are flat `docs`/`docs-*` frontmatter keys.
+
+The plugin used to be called **Folio**. Notes in that format (`folio-*` keys, `<!--folio:threads`) still work, are upgraded whenever the plugin writes to them, and the command *Docs: Upgrade notes from the old Folio format* converts a whole vault. The install scripts move an old `folio` plugin install (settings, enabled state, custom hotkeys) over to `docs`.

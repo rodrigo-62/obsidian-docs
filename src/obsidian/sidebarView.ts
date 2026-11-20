@@ -112,7 +112,7 @@ export class CommentsSidebarView extends ItemView {
 			this.render();
 		} catch (e) {
 			console.error('[folio] comments sidebar', e);
-			this.sbEmptyEl.setText(`Folio could not show the comments: ${(e as Error).message}`);
+			this.sbEmptyEl.setText(`Docs could not show the comments: ${(e as Error).message}`);
 			this.sbEmptyEl.show();
 		}
 	}

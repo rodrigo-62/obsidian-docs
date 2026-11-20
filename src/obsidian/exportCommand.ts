@@ -45,10 +45,10 @@ export async function copyForLLM(plugin: FolioPlugin, view: MarkdownView, req: C
 	const s = plugin.settings;
 	const md = view.getViewData();
 	const doc = inlineCommentStore.read(md);
-	if (!doc.ok) new Notice(`Folio: ${doc.error}. Exporting the text without comments.`);
+	if (!doc.ok) new Notice(`Docs: ${doc.error}. Exporting the text without comments.`);
 	const selection = req.selectionOnly ? selectionOffsets(view) : null;
 	if (req.selectionOnly && !selection) {
-		new Notice('Folio: nothing is selected.');
+		new Notice('Docs: nothing is selected.');
 		return;
 	}
 	const embedMode = req.embeds ?? s.exportEmbeds;
@@ -67,7 +67,7 @@ export async function copyForLLM(plugin: FolioPlugin, view: MarkdownView, req: C
 	try {
 		await navigator.clipboard.writeText(result.text);
 	} catch (e) {
-		new Notice(`Folio: could not write to the clipboard (${(e as Error).message}).`);
+		new Notice(`Docs: could not write to the clipboard (${(e as Error).message}).`);
 		return;
 	}
 	new Notice(exportSummary(result.stats, options.mode));

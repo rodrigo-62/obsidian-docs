@@ -33,13 +33,40 @@ export const LIMITS = {
 } as const;
 
 export const KEYS = {
+	enabled: 'docs',
+	zoom: 'docs-zoom',
+	width: 'docs-width',
+	font: 'docs-font',
+	fontSize: 'docs-font-size',
+	theme: 'docs-theme',
+} as const;
+
+/** Keys written by earlier versions (the plugin was called Folio): still read, moved on the next write. */
+export const LEGACY_KEYS: Record<keyof typeof KEYS, string> = {
 	enabled: 'folio',
 	zoom: 'folio-zoom',
 	width: 'folio-width',
 	font: 'folio-font',
 	fontSize: 'folio-font-size',
 	theme: 'folio-theme',
-} as const;
+};
+
+/** Move legacy keys to the new ones (in place; new values win). Returns true if anything changed. */
+export function migrateFrontmatter(fm: Record<string, unknown>): boolean {
+	let changed = false;
+	for (const k of Object.keys(KEYS) as (keyof typeof KEYS)[]) {
+		const old = LEGACY_KEYS[k];
+		if (!(old in fm)) continue;
+		if (!(KEYS[k] in fm)) fm[KEYS[k]] = fm[old];
+		delete fm[old];
+		changed = true;
+	}
+	return changed;
+}
+
+export function hasLegacyKeys(fm: Record<string, unknown> | null | undefined): boolean {
+	return !!fm && Object.values(LEGACY_KEYS).some((k) => k in fm);
+}
 
 /** Zoom presets, as in Google Docs' zoom menu. */
 export const ZOOM_STEPS = [50, 75, 90, 100, 110, 125, 150, 175, 200];
@@ -66,7 +93,10 @@ function bool(v: unknown): boolean {
 
 /** Read settings from a frontmatter object; missing or invalid keys fall back to `defaults`, numbers are clamped. */
 export function readDocSettings(fm: Record<string, unknown> | null | undefined, defaults: PageSettings = DEFAULT_DOC_SETTINGS): DocSettings {
-	const f = fm ?? {};
+	const raw = fm ?? {};
+	// read new keys, falling back to the legacy ones
+	const f: Record<string, unknown> = {};
+	for (const k of Object.keys(KEYS) as (keyof typeof KEYS)[]) f[KEYS[k]] = raw[KEYS[k]] ?? raw[LEGACY_KEYS[k]];
 	const zoom = num(f[KEYS.zoom]);
 	const width = num(f[KEYS.width]);
 	const size = num(f[KEYS.fontSize]);

@@ -22,14 +22,14 @@ function dispatch(view: EditorView, changes: Change[], extra: { effects?: import
 }
 
 function damaged(error?: string): void {
-	new Notice(`Folio: this note's comment data is damaged and was not changed. ${error ?? ''}`.trim(), 8000);
+	new Notice(`Docs: this note's comment data is damaged and was not changed. ${error ?? ''}`.trim(), 8000);
 }
 
 /** Check a selection can be commented on (without changing anything). */
 export function validateSelection(view: EditorView, from: number, to: number): string | null {
 	const st = view.state.field(folioField, false);
 	if (!st) return 'Comments are not available in this editor.';
-	if (!st.doc.ok) return "This note's comment data is damaged; fix the folio:threads block first.";
+	if (!st.doc.ok) return "This note's comment data is damaged; fix the docs:threads block at the end of the note first.";
 	const plan = planAnchorInsertion(view.state.doc.toString(), from, to, 'probe', st.doc.markers);
 	return plan.ok ? null : plan.error;
 }
@@ -45,7 +45,7 @@ export function startDraft(view: EditorView): Draft | null {
 	}
 	const err = validateSelection(view, from, to);
 	if (err) {
-		new Notice(`Folio: ${err}`);
+		new Notice(`Docs: ${err}`);
 		return null;
 	}
 	const draft = { from, to };
@@ -69,7 +69,7 @@ export function createComment(view: EditorView, body: string, range?: Draft): st
 	const md = view.state.doc.toString();
 	const res = store.create(md, r.from, r.to, body.trim(), st.doc, nowIso());
 	if (!res.ok) {
-		new Notice(`Folio: ${res.error}`);
+		new Notice(`Docs: ${res.error}`);
 		return null;
 	}
 	dispatch(view, res.changes, { effects: [setDraft.of(null), setActive.of(res.id)] });

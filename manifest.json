@@ -1,6 +1,6 @@
 {
-	"id": "folio",
-	"name": "Folio",
+	"id": "docs",
+	"name": "Docs",
 	"version": "0.1.0",
 	"minAppVersion": "1.8.0",
 	"description": "Google-Docs-like doc mode: per-note page view and theme, margin comments with threaded replies, and copy-for-LLM export.",

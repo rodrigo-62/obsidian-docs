@@ -306,7 +306,7 @@ function embedReference(s: Extract<Span, { kind: 'embed' }>): string {
 // Frontmatter
 // ---------------------------------------------------------------------------
 
-/** Frontmatter with the plugin's own `folio`/`folio-*` keys removed; '' if nothing remains. */
+/** Frontmatter with the plugin's own `docs`/`docs-*` keys (and the legacy `folio*` ones) removed; '' if nothing remains. */
 export function cleanFrontmatter(raw: string): string {
 	const lines = raw.replace(/\r/g, '').split('\n');
 	const closeIdx = lines.findIndex((l, i) => i > 0 && /^(---|\.\.\.)\s*$/.test(l));
@@ -316,7 +316,7 @@ export function cleanFrontmatter(raw: string): string {
 	for (const l of inner) {
 		if (/^[^\s#-][^:]*:/.test(l) || /^"[^"]*":/.test(l)) {
 			const key = l.slice(0, l.indexOf(':')).replace(/^"|"$/g, '').trim();
-			skipping = key === 'folio' || key.startsWith('folio-');
+			skipping = key === 'docs' || key.startsWith('docs-') || key === 'folio' || key.startsWith('folio-');
 		}
 		if (!skipping) kept.push(l);
 	}

@@ -194,7 +194,7 @@ describe('planAnchorInsertion', () => {
 	it('never puts markers inside the thread block', () => {
 		const md = `text\n\n${serializeThreadBlock({ z: createThread('q', 'b') })}\n`;
 		const plan = planAnchorInsertion(md, 0, md.length, 'x');
-		expect(plan.ok && applyChanges(md, plan.changes).startsWith(`${GUARD}${o('x')}text${c('x')}\n\n<!--folio:threads`)).toBe(true);
+		expect(plan.ok && applyChanges(md, plan.changes).startsWith(`${GUARD}${o('x')}text${c('x')}\n\n<!--docs:threads`)).toBe(true);
 	});
 });
 

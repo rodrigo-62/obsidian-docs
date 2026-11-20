@@ -30,7 +30,7 @@ describe('footnotes', () => {
 	it('keeps the definition before the hidden thread block', () => {
 		const md = `Text.\n\n${serializeThreadBlock({ x: createThread('q', 'b') })}\n`;
 		const { a, out } = run(md, 4);
-		expect(out.startsWith('Text[^1].\n\n[^1]: \n\n<!--folio:threads')).toBe(true);
+		expect(out.startsWith('Text[^1].\n\n[^1]: \n\n<!--docs:threads')).toBe(true);
 		if (a.kind === 'insert') expect(out.slice(0, a.cursor).endsWith('[^1]: ')).toBe(true);
 	});
 
