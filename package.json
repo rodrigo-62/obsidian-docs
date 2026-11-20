@@ -16,7 +16,7 @@
 		"install-plugin": "node scripts/install-plugin.mjs",
 		"update-vaults": "npm run build && node scripts/update-vaults.mjs"
 	},
-	"license": "UNLICENSED",
+	"license": "MIT",
 	"devDependencies": {
 		"@codemirror/state": "^6.7.6",
 		"@codemirror/view": "^6.43.13",

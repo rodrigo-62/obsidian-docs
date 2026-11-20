@@ -11,7 +11,7 @@ Decisions made autonomously where the spec said "confirm with me", "stop and ask
 - **D0.5 Build output.** esbuild writes `dist/main.js` and `dist/styles.css` (CSS is bundled from `src/styles/index.css`). An `onEnd` hook copies them and `manifest.json` into `test-vault/.obsidian/plugins/folio/` and drops a `.hotreload` marker there. No symlinks, so it works the same everywhere.
 - **D0.6 Test vault is generated.** The sample notes live in `scripts/vault-src/` and are written by `npm run vault:reset` (`scripts/build-test-vault.mjs`). That script refuses to write outside `test-vault/` and never touches `.obsidian/`. It also generates the ~13k-word, 100-thread performance note and a small PNG. The vault notes are committed too, so a clone works without running it.
 - **D0.7 Hot Reload** 0.3.1 is copied from pjeby/hot-reload into the test vault, and both plugins are listed in `community-plugins.json`. The core *Footnotes* plugin is enabled in the test vault.
-- **D0.8 License** is left `UNLICENSED`/private in `package.json`. Pick one before publishing.
+- **D0.8 License:** MIT (`LICENSE`, added by the user; `package.json` says `MIT`). `private: true` stays in `package.json`; it only blocks publishing to npm, which Obsidian plugins don't use.
 
 ## Phase 2: comment core
 

@@ -38,3 +38,7 @@ Then in Obsidian: Settings → Community plugins → enable **Docs**.
 Comments live inside the note. Anchors are paired HTML comments around the commented text, `<!--c:k3f9-->text<!--/c:k3f9-->`, with a zero-width space in front when a marker starts a line. Threads are one pretty-printed JSON block at the end of the file (`<!--docs:threads … -->`). Page settings are flat `docs`/`docs-*` frontmatter keys.
 
 The plugin used to be called **Folio**. Notes in that format (`folio-*` keys, `<!--folio:threads`) still work, are upgraded whenever the plugin writes to them, and the command *Docs: Upgrade notes from the old Folio format* converts a whole vault. The install scripts move an old `folio` plugin install (settings, enabled state, custom hotkeys) over to `docs`.
+
+## License
+
+MIT. See `LICENSE`.
