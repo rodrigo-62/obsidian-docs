@@ -27,5 +27,5 @@
 
 ## Current status / next step
 
-- **Done:** Phase 0 (setup, research, test vault). Phase 2 (core: `mdScan.ts`, `markers.ts`, `threadStore.ts`, `model.ts`, `commentStore.ts` façade; 82 tests).
-- **Next:** Phase 3 (copy for LLM: `src/core/export.ts` plus tests, command, editor menu, header button).
+- **Done:** Phase 0 (setup, research, test vault). Phase 2 (core: `mdScan.ts`, `markers.ts`, `threadStore.ts`, `model.ts`, `commentStore.ts` façade). Phase 3 (`core/export.ts`, `core/docSettings.ts`; `obsidian/exportCommand.ts`, commands, editor menu, header button, settings tab). 126 tests.
+- **Next:** Phase 4 (editor integration in `src/obsidian/cm/`: StateField over `inlineCommentStore.read`, hidden atomic markers, highlights, boundary/deletion transaction filter using `adjustInsertionPos`/`adjustDeletions`, clipboard stripping, paste sanitising, hidden thread block, create-comment command `Ctrl+Alt+M` with a draft card).
