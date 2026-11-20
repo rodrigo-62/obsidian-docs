@@ -80,3 +80,13 @@ Make the Obsidian window wide (≥ 1100 px editor pane). Open *Essays/A Short Hi
 - [ ] Command palette → **Folio: Open comments sidebar** works in wide panes too. It follows the note you switch to.
 - [ ] *Performance — very long note*: scrolling and typing stay smooth with 100 cards in the margin.
 - [ ] Open the same note in two panes side by side (wide window). Both show cards. Replying in one pane updates the other.
+
+## Phase 6: tree view, navigation, reading view
+
+- [ ] In *Essays/A Short History of Lighthouses*, activate the "Light and Distance" card and click the branch icon in its header. Replies indent under the comment they answer (a2 and a3 under a1, a4 under a2). Click ▾ next to a comment to collapse its branch ("▸ 1 reply"). Click the list icon to go back to time order.
+- [ ] Settings → Folio → *Thread display: Tree*. New cards (e.g. after reopening the note) start in tree view.
+- [ ] Put the cursor at the top of the essay and press **Ctrl+Alt+.** repeatedly. Each press selects the next comment's text and activates its card, wrapping to the first after the last. **Ctrl+Alt+,** goes backwards.
+- [ ] With a card active, run **Folio: Reply to the active comment**. The cursor jumps into that card's reply box.
+- [ ] Switch the essay to **Reading view** (Ctrl+E or the book icon). Commented passages are highlighted (not the resolved one). The list item, blockquote and heading comments keep their formatting, and no raw `<!--` text appears anywhere.
+- [ ] Click a highlight in Reading view. The Comments sidebar opens with that thread active, and you can reply from there. The reading view refreshes with the reply saved.
+- [ ] Settings → Folio → change *Margin width* (e.g. to 400). The margin in an open note widens right away.

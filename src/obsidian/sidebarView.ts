@@ -89,6 +89,11 @@ export class CommentsSidebarView extends ItemView {
 		this.refresh();
 	}
 
+	focusReply(id: string): void {
+		this.refresh();
+		this.cards.get(id)?.focusReply();
+	}
+
 	/** Re-render from the source editor's state. */
 	refresh(): void {
 		if (!this.listEl) return;

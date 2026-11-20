@@ -27,5 +27,5 @@
 
 ## Current status / next step
 
-- **Done:** Phases 0, 2, 3, 4, 5. Phase 5 = `core/layout.ts`, `obsidian/margin/` (`marginView.ts` ViewPlugin layer in `.cm-scroller`; `card.ts` shared thread card), `sidebarView.ts` (narrow-pane fallback and general list). DOM smoke tests in happy-dom (`tests/margin.dom.test.ts`, obsidian mock aliased in `vitest.config.ts`). 162 tests.
-- **Next:** Phase 6 (tree view is already in the cards; still to do: next/previous comment commands, settings polish, reading-view support if feasible). Then Phase 1 (doc mode page appearance, toolbar) last.
+- **Done:** Phases 0, 2, 3, 4, 5, 6. Phase 6 = next/previous/reply/resolve commands, reading-view highlights (`core/readingMatch.ts`, `obsidian/reading.ts`), settings polish. 172 tests.
+- **Next:** Phase 1 (doc mode page appearance): `obsidian/pageStyle.ts` (CSS classes and vars on the view container, never body), generated paper palettes in `src/styles/palette.css` (re-declare body's semantic colour mappings; see docs/RESEARCH.md), `obsidian/toolbar.ts`, toggle doc mode, zoom commands, Ctrl+Alt+scroll, font picker with installed-font detection.

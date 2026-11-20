@@ -3,11 +3,12 @@ import type { EditorView } from '@codemirror/view';
 import { DEFAULT_SETTINGS, FolioSettingTab, type FolioSettings } from './settings';
 import { CopyOptionsModal, copyForLLM, selectionOffsets } from './exportCommand';
 import { commentExtensions, editorViewOf, folioField } from './cm';
-import { defaults as cmDefaults, setShowResolved } from './cm/state';
-import { cancelDraft, createComment, repairMarkers, startDraft } from './commentOps';
+import { defaults as cmDefaults, setActive, setShowResolved } from './cm/state';
+import { cancelDraft, createComment, ops, repairMarkers, revealThread, startDraft } from './commentOps';
 import { ComposerModal } from './composer';
-import { marginContext, marginExtensions, marginIsWide, refreshMargin, type MarginContext } from './margin/marginView';
+import { marginContext, marginExtensions, marginIsWide, marginPlugin, refreshMargin, type MarginContext } from './margin/marginView';
 import { CommentsSidebarView, SIDEBAR_VIEW } from './sidebarView';
+import { clearReadingCache, makeReadingPostProcessor } from './reading';
 
 export default class FolioPlugin extends Plugin {
 	settings!: FolioSettings;
@@ -26,6 +27,20 @@ export default class FolioPlugin extends Plugin {
 		this.registerEditorExtension(commentExtensions([marginContext.of(this.marginContext()), ...marginExtensions]));
 		this.registerExportCommands();
 		this.registerCommentCommands();
+		this.registerNavigationCommands();
+		this.registerMarkdownPostProcessor(makeReadingPostProcessor(() => this.settings.showResolved));
+		// Reading view: clicking a highlight shows the thread in the sidebar.
+		this.registerDomEvent(document, 'click', (e) => {
+			const hl = (e.target as HTMLElement | null)?.closest?.('.markdown-reading-view .folio-hl[data-folio-id]');
+			if (!hl) return;
+			const id = hl.getAttribute('data-folio-id')!;
+			const view = this.markdownViews().find((v) => v.containerEl.contains(hl));
+			const cm = editorViewOf(view);
+			if (!view || !cm) return;
+			this.lastMarkdown = view;
+			cm.dispatch({ effects: setActive.of(id) });
+			void this.activateSidebar();
+		});
 
 		this.registerEvent(
 			this.app.workspace.on('editor-menu', (menu: Menu, editor: Editor, info: MarkdownView | MarkdownFileInfo) => {
@@ -116,11 +131,13 @@ export default class FolioPlugin extends Plugin {
 
 	async saveSettings(): Promise<void> {
 		await this.saveData(this.settings);
+		clearReadingCache();
 		cmDefaults.showResolved = this.settings.showResolved;
 		for (const view of this.markdownViews()) {
 			const cm = editorViewOf(view);
 			if (cm && cm.state.field(folioField, false)) cm.dispatch({ effects: setShowResolved.of(this.settings.showResolved) });
 		}
+		this.refreshMargins();
 		this.refreshAllViews();
 	}
 
@@ -185,6 +202,73 @@ export default class FolioPlugin extends Plugin {
 			name: 'Copy text only for LLM (no comments)',
 			checkCallback: withView((v) => void copyForLLM(this, v, { mode: 'text' })),
 		});
+	}
+
+	// --- Keyboard navigation (phase 6) -----------------------------------------
+
+	private registerNavigationCommands(): void {
+		const withCm = (fn: (cm: EditorView, view: MarkdownView) => void) => (checking: boolean, _e: Editor, ctx: MarkdownView | MarkdownFileInfo) => {
+			const cm = ctx instanceof MarkdownView ? editorViewOf(ctx) : null;
+			if (!cm || !(ctx instanceof MarkdownView) || !cm.state.field(folioField, false)) return false;
+			if (!checking) fn(cm, ctx);
+			return true;
+		};
+		this.addCommand({
+			id: 'next-comment',
+			name: 'Go to next comment',
+			hotkeys: [{ modifiers: ['Mod', 'Alt'], key: '.' }],
+			editorCheckCallback: withCm((cm) => this.jumpComment(cm, 1)),
+		});
+		this.addCommand({
+			id: 'previous-comment',
+			name: 'Go to previous comment',
+			hotkeys: [{ modifiers: ['Mod', 'Alt'], key: ',' }],
+			editorCheckCallback: withCm((cm) => this.jumpComment(cm, -1)),
+		});
+		this.addCommand({
+			id: 'reply-active-comment',
+			name: 'Reply to the active comment',
+			editorCheckCallback: withCm((cm, view) => {
+				const id = cm.state.field(folioField).ui.activeId;
+				if (!id) {
+					new Notice('Folio: no active comment. Put the cursor in commented text first.');
+					return;
+				}
+				const card = marginIsWide(cm) ? cm.plugin(marginPlugin)?.card(id) : undefined;
+				if (card) card.focusReply();
+				else {
+					this.lastMarkdown = view;
+					void this.activateSidebar().then(() => window.setTimeout(() => this.sidebar()?.focusReply(id), 50));
+				}
+			}),
+		});
+		this.addCommand({
+			id: 'resolve-active-comment',
+			name: 'Resolve the active comment',
+			editorCheckCallback: withCm((cm) => {
+				const id = cm.state.field(folioField).ui.activeId;
+				if (id) ops.resolve(cm, id, true);
+				else new Notice('Folio: no active comment.');
+			}),
+		});
+	}
+
+	/** Select the next/previous visible thread after/before the cursor (wrapping around). */
+	jumpComment(cm: EditorView, dir: 1 | -1): void {
+		const st = cm.state.field(folioField);
+		const ids = st.doc.anchored.filter((id) => !st.doc.threads[id]!.resolved || st.ui.showResolved);
+		if (!ids.length) {
+			new Notice('Folio: no comments in this note.');
+			return;
+		}
+		const pos = (id: string) => st.doc.markers.anchors.get(id)!.textFrom;
+		const head = cm.state.selection.main.from;
+		const current = st.ui.activeId && ids.includes(st.ui.activeId) ? pos(st.ui.activeId) : null;
+		const ref = current ?? head;
+		let target: string | undefined;
+		if (dir > 0) target = ids.find((id) => pos(id) > ref) ?? ids[0];
+		else target = [...ids].reverse().find((id) => pos(id) < ref) ?? ids[ids.length - 1];
+		if (target) revealThread(cm, target, { select: true, focus: true });
 	}
 
 	// --- Comments -------------------------------------------------------------
