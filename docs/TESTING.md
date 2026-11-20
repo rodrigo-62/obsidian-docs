@@ -156,3 +156,9 @@ Make the Obsidian window wide (≥ 1100 px editor pane). Open *Essays/A Short Hi
 - [ ] The test notes (still in the old Folio format) look and work as before: page, toolbar, comments.
 - [ ] Command palette → **Docs: Upgrade notes from the old Folio format**. A notice reports how many notes were upgraded; the notes' properties now say `docs`, `docs-zoom`, …
 - [ ] Your other vault: `npm run update-vaults`, then restart Obsidian there. "Docs" is enabled in place of "Folio" with your settings, the old Folio plugin is gone, and your notes work. Run the upgrade command there too, whenever you like.
+
+## Publishing preparation (F6)
+
+- [ ] Hotkeys: in your vaults, Ctrl+Alt+M / C / F / . / , / ↓ / ↑ still work after `npm run update-vaults` (the script adds them where you had none). In the test vault they come from `.obsidian/hotkeys.json`.
+- [ ] A comment whose text starts with a `---` line shows all its text, with a separator line at the top.
+- [ ] Tree view: the first comment has no ▾ and no empty line above its text.

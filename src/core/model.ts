@@ -239,9 +239,12 @@ export function treeRows(thread: Thread, collapsed: ReadonlySet<string> = new Se
 }
 
 /**
- * Make `---` lines inside a comment body render as separators. In Markdown, a
- * `---` line directly under text is a setext heading underline, so a blank
- * line is put before (and after) each such line.
+ * Make `---` lines inside a comment body render as separators. Two Markdown
+ * traps: a `---` line directly under text is a setext heading underline, and a
+ * `---` on the first line opens YAML frontmatter, which Obsidian's renderer then
+ * hides together with everything up to the next `---`. So separator lines are
+ * rendered as `***` (the same horizontal rule, neither trap), with blank lines
+ * around them. Only the display changes; the stored body keeps `---`.
  */
 export function prepareCommentMarkdown(body: string): string {
 	const lines = body.split('\n');
@@ -251,7 +254,7 @@ export function prepareCommentMarkdown(body: string): string {
 		if (/^\s*(```|~~~)/.test(line)) inFence = !inFence;
 		if (!inFence && /^\s*-{3,}\s*$/.test(line)) {
 			if (out.length && out[out.length - 1]?.trim() !== '') out.push('');
-			out.push('---');
+			out.push('***');
 			out.push('');
 			continue;
 		}

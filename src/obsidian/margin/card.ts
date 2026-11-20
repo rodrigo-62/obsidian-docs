@@ -227,7 +227,8 @@ export class ThreadCard {
 				row.style.setProperty('--folio-indent', String(r.indent));
 				row.addClass('folio-tree-row');
 				row.toggleClass('is-indented', r.indent > 0);
-				if (r.childCount > 0 && !compact) {
+				// no toggle on the first comment: collapsing it would hide the whole thread
+				if (r.childCount > 0 && !compact && r.depth > 0) {
 					const meta = row.querySelector<HTMLElement>(':scope > .folio-comment-meta')!;
 					const tog = createSpan({ cls: 'folio-tree-toggle', text: r.collapsed ? `▸ ${r.hiddenCount} repl${r.hiddenCount === 1 ? 'y' : 'ies'}` : '▾', attr: { 'aria-label': r.collapsed ? 'Show replies' : 'Hide replies' } });
 					const acts = meta.querySelector(':scope > .folio-comment-actions');
@@ -285,7 +286,7 @@ export class ThreadCard {
 		if (!isRoot) meta.createSpan({ cls: 'folio-date', text: shortDate(c.created), attr: { 'aria-label': fullDate(c.created) } });
 		if (c.edited) meta.createSpan({ cls: 'folio-edited', text: '(edited)', attr: { 'aria-label': `Edited ${fullDate(c.edited)}` } });
 		// The root comment's actions live in the header (⋯ menu); replies get their own.
-		if (!compact && !this.thread?.resolved && (!isRoot || this.tree)) {
+		if (!compact && !this.thread?.resolved && !isRoot) {
 			const acts = meta.createDiv({ cls: 'folio-comment-actions' });
 			const reply = iconButton(acts, 'reply', 'Reply to this comment');
 			reply.addEventListener('click', (e) => {

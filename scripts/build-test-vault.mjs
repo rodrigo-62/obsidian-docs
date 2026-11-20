@@ -1,13 +1,17 @@
 // Regenerates the sample notes in test-vault/ from scripts/vault-src/.
-// Only ever writes inside test-vault/ (never .obsidian/). Run: npm run vault:reset
+// Only ever writes inside test-vault/ (never .obsidian/), or into a folder under .scratch/ given
+// as an argument (used for screenshots). Run: npm run vault:reset
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { deflateSync } from 'node:zlib';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const src = join(root, 'scripts', 'vault-src');
-const vault = join(root, 'test-vault');
+// Optional target folder (for screenshots): only test-vault/ or somewhere inside .scratch/.
+const target = process.argv[2] ? resolve(process.argv[2]) : join(root, 'test-vault');
+if (target !== join(root, 'test-vault') && !target.startsWith(join(root, '.scratch') + '/')) throw new Error('target must be test-vault/ or inside .scratch/');
+const vault = target;
 const ZW = '​';
 
 const notes = {

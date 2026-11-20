@@ -132,8 +132,9 @@ describe('helpers', () => {
 	});
 
 	it('prepares --- separators so they are not setext headings', () => {
-		expect(prepareCommentMarkdown('one\n---\ntwo')).toBe('one\n\n---\n\ntwo');
-		expect(prepareCommentMarkdown('---\nI know')).toBe('---\n\nI know');
+		expect(prepareCommentMarkdown('one\n---\ntwo')).toBe('one\n\n***\n\ntwo');
+		// a leading --- must not open frontmatter (which would hide the text up to the next ---)
+		expect(prepareCommentMarkdown('---\nI know\n---\nMaybe')).toBe('***\n\nI know\n\n***\n\nMaybe');
 		expect(prepareCommentMarkdown('```\n---\n```')).toBe('```\n---\n```');
 	});
 

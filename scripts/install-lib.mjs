@@ -14,6 +14,17 @@ function readJson(p, fallback) {
 	}
 }
 
+/** Suggested shortcuts (not set by the plugin itself: Obsidian's guidelines forbid default hotkeys). */
+export const SUGGESTED_HOTKEYS = {
+	'docs:add-comment': [{ modifiers: ['Mod', 'Alt'], key: 'M' }],
+	'docs:copy-for-llm': [{ modifiers: ['Mod', 'Alt'], key: 'C' }],
+	'docs:footnote': [{ modifiers: ['Mod', 'Alt'], key: 'F' }],
+	'docs:next-comment': [{ modifiers: ['Mod', 'Alt'], key: '.' }],
+	'docs:previous-comment': [{ modifiers: ['Mod', 'Alt'], key: ',' }],
+	'docs:next-heading': [{ modifiers: ['Mod', 'Alt'], key: 'ArrowDown' }],
+	'docs:previous-heading': [{ modifiers: ['Mod', 'Alt'], key: 'ArrowUp' }],
+};
+
 /** Returns a list of human-readable notes about what was done. Throws if `vault` isn't a vault. */
 export function installInto(vault) {
 	const root = resolve(vault);
@@ -54,6 +65,14 @@ export function installInto(vault) {
 		for (const [k, v] of Object.entries(hk)) next[k.startsWith(`${OLD_ID}:`) ? `${ID}:${k.slice(OLD_ID.length + 1)}` : k] = v;
 		writeFileSync(hkPath, JSON.stringify(next, null, 2));
 		notes.push('renamed your custom Folio hotkeys');
+	}
+	// Suggested hotkeys for commands that have none yet (never overrides yours).
+	const current = readJson(hkPath, {}) ?? {};
+	const added = Object.keys(SUGGESTED_HOTKEYS).filter((k) => !(k in current));
+	if (added.length) {
+		for (const k of added) current[k] = SUGGESTED_HOTKEYS[k];
+		writeFileSync(hkPath, JSON.stringify(current, null, 2));
+		notes.push(`added ${added.length} suggested hotkey${added.length === 1 ? '' : 's'} (Ctrl+Alt+M/C/F/./,/↓/↑) where you had none`);
 	}
 	return notes;
 }

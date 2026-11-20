@@ -3,7 +3,8 @@
 	"name": "Docs",
 	"version": "0.1.0",
 	"minAppVersion": "1.8.0",
-	"description": "Google-Docs-like doc mode: per-note page view and theme, margin comments with threaded replies, and copy-for-LLM export.",
+	"description": "Comment in the margin like in Google Docs, with threaded replies; give notes a page view with their own theme; copy a note with its comments for an AI agent.",
 	"author": "Rodrigo Monteiro",
+	"authorUrl": "https://github.com/rodrigo-62",
 	"isDesktopOnly": true
 }

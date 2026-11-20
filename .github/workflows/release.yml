@@ -1,0 +1,45 @@
+name: Release
+
+# Push a tag equal to the version in manifest.json (e.g. 0.1.0, no "v") to build
+# the plugin and attach main.js, manifest.json and styles.css to a draft release.
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Build
+        run: |
+          npm ci
+          npm test
+          npm run build
+      - name: Check the tag matches manifest.json
+        run: |
+          tag="${GITHUB_REF#refs/tags/}"
+          version="$(node -p "require('./manifest.json').version")"
+          if [ "$tag" != "$version" ]; then echo "Tag $tag does not match manifest version $version"; exit 1; fi
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            dist/main.js
+            dist/styles.css
+      - name: Create draft release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="${GITHUB_REF#refs/tags/}"
+          cp dist/main.js dist/styles.css .
+          gh release create "$tag" --title="$tag" --draft --generate-notes main.js manifest.json styles.css

@@ -1,0 +1,65 @@
+{
+  "docs:add-comment": [
+    {
+      "modifiers": [
+        "Mod",
+        "Alt"
+      ],
+      "key": "M"
+    }
+  ],
+  "docs:copy-for-llm": [
+    {
+      "modifiers": [
+        "Mod",
+        "Alt"
+      ],
+      "key": "C"
+    }
+  ],
+  "docs:footnote": [
+    {
+      "modifiers": [
+        "Mod",
+        "Alt"
+      ],
+      "key": "F"
+    }
+  ],
+  "docs:next-comment": [
+    {
+      "modifiers": [
+        "Mod",
+        "Alt"
+      ],
+      "key": "."
+    }
+  ],
+  "docs:previous-comment": [
+    {
+      "modifiers": [
+        "Mod",
+        "Alt"
+      ],
+      "key": ","
+    }
+  ],
+  "docs:next-heading": [
+    {
+      "modifiers": [
+        "Mod",
+        "Alt"
+      ],
+      "key": "ArrowDown"
+    }
+  ],
+  "docs:previous-heading": [
+    {
+      "modifiers": [
+        "Mod",
+        "Alt"
+      ],
+      "key": "ArrowUp"
+    }
+  ]
+}
