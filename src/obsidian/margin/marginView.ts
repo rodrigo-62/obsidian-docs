@@ -18,6 +18,8 @@ import { ThreadCard, type CardHost } from './card';
 export interface MarginContext {
 	app: App;
 	marginWidth(): number;
+	/** Comment text size in px (0 = theme default). */
+	commentFontSize(): number;
 	/** Is this editor the main editor of a markdown leaf (not a popover, canvas or embed)? */
 	isMainEditor(view: EditorView): boolean;
 	sourcePath(view: EditorView): string;
@@ -115,6 +117,7 @@ class MarginPlugin implements PluginValue {
 			deleteThread: (id) => ops.deleteThread(v, id),
 			resolve: (id, r) => ops.resolve(v, id, r),
 			activate: (id) => revealThread(v, id, { select: true }),
+			goTo: (id) => revealThread(v, id, { select: true, center: true }),
 			hover: (id) => {
 				if (this.st()?.ui.hoverId !== id) v.dispatch({ effects: setHover.of(id) });
 			},
@@ -248,6 +251,8 @@ class MarginPlugin implements PluginValue {
 			}, 150);
 		});
 		this.draftEl = el;
+		// re-layout while the new comment grows, so it never covers other cards
+		this.resize.observe(el);
 	}
 
 	private removeDraft(): void {
@@ -325,6 +330,9 @@ class MarginPlugin implements PluginValue {
 				if (st?.ui.draft && !this.wide) this.ctx()?.changed(this.view);
 			}, 0);
 		}
+		const size = this.ctx()?.commentFontSize() ?? 0;
+		if (size > 0) this.layer.style.setProperty('--folio-comment-size', `${size}px`);
+		else this.layer.style.removeProperty('--folio-comment-size');
 		this.layer.style.left = `${Math.round(m.left)}px`;
 		this.layer.style.width = `${m.width}px`;
 		for (const [id, top] of m.tops) {

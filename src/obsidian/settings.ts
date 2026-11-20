@@ -14,6 +14,8 @@ export interface FolioSettings {
 	themeTweaks: Record<PaperKind, ThemeTweak>;
 	// Comments
 	marginWidth: number;
+	/** Comment text size in px; 0 = the theme's small UI size. */
+	commentFontSize: number;
 	defaultThreadView: 'flat' | 'tree';
 	showResolved: boolean;
 	// Copy for LLM
@@ -25,6 +27,8 @@ export interface FolioSettings {
 	ctrlAltScrollZoom: boolean;
 }
 
+export const COMMENT_SIZES: Record<string, string> = { '0': 'Default', '11': '11 px', '12': '12 px', '13': '13 px', '14': '14 px', '15': '15 px', '16': '16 px', '18': '18 px', '20': '20 px' };
+
 export const DEFAULT_SETTINGS: FolioSettings = {
 	defaultZoom: DEFAULT_DOC_SETTINGS.zoom,
 	defaultWidth: DEFAULT_DOC_SETTINGS.width,
@@ -33,6 +37,7 @@ export const DEFAULT_SETTINGS: FolioSettings = {
 	defaultTheme: DEFAULT_DOC_SETTINGS.theme,
 	themeTweaks: { light: { ...DEFAULT_TWEAKS.light }, sepia: { ...DEFAULT_TWEAKS.sepia }, dark: { ...DEFAULT_TWEAKS.dark } },
 	marginWidth: 300,
+	commentFontSize: 0,
 	defaultThreadView: 'flat',
 	showResolved: false,
 	exportIncludeResolved: false,
@@ -142,6 +147,18 @@ export class FolioSettingTab extends PluginSettingTab {
 					.setDynamicTooltip()
 					.onChange(async (v) => {
 						s.marginWidth = v;
+						await save();
+					}),
+			);
+		new Setting(containerEl)
+			.setName('Comment text size')
+			.setDesc('Size of the text in comment cards (margin and sidebar). Also in the doc toolbar (Aa).')
+			.addDropdown((d) =>
+				d
+					.addOptions(COMMENT_SIZES)
+					.setValue(String(s.commentFontSize))
+					.onChange(async (v) => {
+						s.commentFontSize = Number(v);
 						await save();
 					}),
 			);

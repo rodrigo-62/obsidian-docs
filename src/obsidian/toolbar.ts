@@ -3,6 +3,7 @@
 import { App, Modal, Setting, setIcon, type MarkdownView } from 'obsidian';
 import { LIMITS, WIDTH_PRESETS, ZOOM_STEPS, stepFontSize, type DocSettings, type ThemeChoice } from '../core/docSettings';
 import { CURATED_FONTS, FONT_ALTERNATIVES, isFontInstalled, querySystemFonts } from './fonts';
+import { COMMENT_SIZES } from './settings';
 
 export interface ToolbarActions {
 	update(patch: Partial<DocSettings>): void;
@@ -10,6 +11,8 @@ export interface ToolbarActions {
 	copyForLLM(): void;
 	copyOptions(): void;
 	toggleResolved(): void;
+	commentFontSize(): number;
+	setCommentFontSize(px: number): void;
 	showResolved(): boolean;
 	openSidebar(): void;
 }
@@ -61,6 +64,7 @@ export class DocToolbar {
 	private widthSel: HTMLSelectElement;
 	private themeBtn: HTMLElement;
 	private resolvedBtn: HTMLElement;
+	private commentSizeSel: HTMLSelectElement;
 	private current: DocSettings | null = null;
 
 	constructor(private app: App, view: MarkdownView, private actions: ToolbarActions) {
@@ -122,6 +126,9 @@ export class DocToolbar {
 		// comments + export
 		const g5 = group('folio-tb-comments');
 		this.button(g5, 'message-square-plus', 'Add comment (Ctrl+Alt+M)').addEventListener('click', () => actions.addComment());
+		this.commentSizeSel = g5.createEl('select', { cls: 'dropdown folio-tb-csize', attr: { 'aria-label': 'Comment text size' } });
+		for (const [v, label] of Object.entries(COMMENT_SIZES)) this.commentSizeSel.createEl('option', { text: v === '0' ? 'Aa' : `Aa ${v}`, attr: { value: v, title: label } });
+		this.commentSizeSel.addEventListener('change', () => actions.setCommentFontSize(Number(this.commentSizeSel.value)));
 		this.resolvedBtn = this.button(g5, 'check-check', 'Show resolved comments');
 		this.resolvedBtn.addEventListener('click', () => {
 			actions.toggleResolved();
@@ -172,6 +179,7 @@ export class DocToolbar {
 		this.themeBtn.empty();
 		setIcon(this.themeBtn, THEME_ICON[s.theme]);
 		this.themeBtn.setAttr('aria-label', `${THEME_LABEL[s.theme]} (click to change)`);
+		this.commentSizeSel.value = String(this.actions.commentFontSize());
 		// resolved
 		const on = this.actions.showResolved();
 		this.resolvedBtn.toggleClass('is-active', on);

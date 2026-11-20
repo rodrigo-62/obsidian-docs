@@ -130,3 +130,14 @@ Make the Obsidian window wide (≥ 1100 px editor pane). Open *Essays/A Short Hi
 - [ ] Toolbar → Comments sidebar (or the command). The sidebar lists the note's threads with quotes. Clicking a card selects its text.
 - [ ] Activate a card, then click the grey area around the page (or empty space between cards). The card is no longer active.
 - [ ] Command palette → **Folio: Create new doc**, or right-click a folder → **New doc**, or the ribbon's document icon. "Untitled doc" opens with the page look and the toolbar, title ready to rename.
+
+## Feedback round 3
+
+- [ ] In a doc, at the end of a paragraph press Enter. The caret on the new empty line is about as tall as the text (not twice as tall), and the line spacing looks unchanged.
+- [ ] Toolbar **Aa** dropdown (next to the comment buttons): pick 16. All comment cards (margin and sidebar) get bigger text. Also under Settings → Folio → Comment text size.
+- [ ] Send a long reply. The empty "Reply…" box afterwards is back to one line.
+- [ ] Click once into a highlighted word from somewhere else (e.g. from a card or another paragraph). Its card activates. Drag-select from plain text into a highlight: the card does **not** activate.
+- [ ] In a note with many comments, click a highlight far down. Its card is exactly level with the text; earlier cards move up (some may go off screen). Start a new comment there: the "New comment" card is level with the selection, and typing a long comment pushes the next cards down without covering them.
+- [ ] Double-click (or right-click) a comment in a card. A menu offers Reply to this comment, Edit, Copy text, Go to the commented text, Resolve, and Delete.
+- [ ] The active card stands out: page-coloured, shadow, soft outline, shifted slightly towards the text. Inactive cards are flat and tinted.
+- [ ] **Ctrl+Alt+↓ / Ctrl+Alt+↑** jump to the next or previous heading. (If nothing happens, your desktop may be taking these keys; rebind under Settings → Hotkeys → "Folio: Go to next heading".)

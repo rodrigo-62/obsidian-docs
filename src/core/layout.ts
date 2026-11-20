@@ -2,8 +2,9 @@
 //
 // Each card wants its top edge level with the top of its anchor. Cards are
 // sorted by anchor position and pushed down to avoid overlap. If a card is
-// active, it gets exactly its ideal position, and the cards before it are
-// pushed *up* (and the ones after it down), as in Google Docs.
+// active, it always gets exactly its ideal position, and the cards before it
+// are pushed *up* (and the ones after it down), as in Google Docs, even if
+// that pushes some of them off the top for a while.
 
 export interface CardBox {
 	id: string;
@@ -17,7 +18,7 @@ export interface CardBox {
 export interface LayoutOptions {
 	gap?: number;
 	activeId?: string | null;
-	/** Cards may not start above this (e.g. 0 = top of the document). */
+	/** Without an active card, cards don't start above this (e.g. the top of the document). */
 	minTop?: number;
 }
 
@@ -45,7 +46,7 @@ export function layoutCards(cards: CardBox[], opts: LayoutOptions = {}): Map<str
 		forward(0, minTop);
 	} else {
 		const active = sorted[k]!;
-		tops[k] = Math.max(active.ideal, minTop);
+		tops[k] = active.ideal;
 		// cards after the active one: pushed down
 		forward(k + 1, tops[k]! + active.height + gap);
 		// cards before it: pushed up
@@ -55,15 +56,6 @@ export function layoutCards(cards: CardBox[], opts: LayoutOptions = {}): Map<str
 			const t = Math.min(c.ideal, ceiling - c.height);
 			tops[i] = t;
 			ceiling = t - gap;
-		}
-		// Not enough room above (document start): push the cards down only as much as needed.
-		if (sorted.length && tops[0]! < minTop) {
-			let cursor = minTop;
-			for (let i = 0; i < sorted.length; i++) {
-				const t = Math.max(tops[i]!, cursor);
-				tops[i] = t;
-				cursor = t + sorted[i]!.height + gap;
-			}
 		}
 	}
 	const out = new Map<string, number>();

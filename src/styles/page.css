@@ -60,6 +60,16 @@
 	max-width: var(--folio-page-width);
 }
 
+/* Empty lines: Chromium draws the caret on an empty line as tall as the whole line
+   box, so with generous line spacing it looks oversized until you type. Give empty
+   lines a text-sized line-height and put the difference back as padding: the line
+   keeps its height, the caret matches the text. */
+.view-content.folio-doc .markdown-source-view.mod-cm6 .cm-content > .cm-line:has(> br:only-child) {
+	line-height: 1.2;
+	padding-top: calc((var(--line-height-normal, 1.5) - 1.2) * 0.5em);
+	padding-bottom: calc((var(--line-height-normal, 1.5) - 1.2) * 0.5em);
+}
+
 /* Highlight colours follow the page theme, not the app theme. */
 .view-content.folio-theme-light {
 	--folio-hl-bg: rgba(255, 210, 0, 0.26);
@@ -128,6 +138,9 @@
 }
 .folio-tb-font.is-missing {
 	color: var(--text-error);
+}
+.folio-toolbar select.dropdown.folio-tb-csize {
+	width: 72px;
 }
 .folio-tb-width {
 	width: 82px;

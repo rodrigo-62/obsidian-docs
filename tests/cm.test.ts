@@ -72,6 +72,15 @@ describe('folioField', () => {
 		expect(s3.field(folioField).ui.activeId).toBeNull();
 	});
 
+	it('activates on any cursor move into a highlight, but not on a non-empty selection', () => {
+		const s = mk(`a ${o('x')}bbbb${c('x')} c`);
+		const a = s.field(folioField).doc.markers.anchors.get('x')!;
+		const s2 = apply(s, { selection: EditorSelection.cursor(a.textFrom + 2) }); // no userEvent (e.g. focus click)
+		expect(s2.field(folioField).ui.activeId).toBe('x');
+		const s3 = apply(s, { selection: EditorSelection.range(0, a.textFrom + 2), userEvent: 'select.pointer' });
+		expect(s3.field(folioField).ui.activeId).toBeNull();
+	});
+
 	it('picks the innermost thread for nested ranges', () => {
 		const s = mk(`${o('out')}x ${o('in')}yy${c('in')} z${c('out')}`, ['out', 'in']);
 		const st = s.field(folioField);

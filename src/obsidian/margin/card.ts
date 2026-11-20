@@ -1,7 +1,7 @@
 // A comment thread card (SPEC §5.1, §5.5), used in the margin and the sidebar.
 // Plain DOM via Obsidian's createEl helpers. Comment bodies are Markdown.
 
-import { App, Component, MarkdownRenderer, Menu, Modal, setIcon, Setting } from 'obsidian';
+import { App, Component, MarkdownRenderer, Menu, Modal, Notice, setIcon, Setting } from 'obsidian';
 import { excerpt, flatView, prepareCommentMarkdown, rootComment, treeRows, type Comment, type ParentChip, type Thread } from '../../core/model';
 import { createComposer, type Composer } from '../composer';
 
@@ -16,6 +16,8 @@ export interface CardHost {
 	resolve(id: string, resolved: boolean): boolean;
 	/** Select/scroll to the thread's text and make it active. */
 	activate(id: string): void;
+	/** Scroll the editor so the thread's text is in the middle of the view, and select it. */
+	goTo(id: string): void;
 	hover(id: string | null): void;
 	/** Tree view on/off for a thread (session state). */
 	isTree(id: string): boolean;
@@ -264,6 +266,16 @@ export class ThreadCard {
 		const row = list.createDiv({ cls: 'folio-comment', attr: { 'data-cid': c.id } });
 		if (compact) row.addClass('is-compact');
 		const isRoot = c.parent === null;
+		// Double-click or right-click: a small menu for this comment.
+		const openMenu = (e: MouseEvent) => {
+			if ((e.target as HTMLElement).closest('textarea, button, a')) return;
+			e.preventDefault();
+			e.stopPropagation();
+			window.getSelection()?.removeAllRanges();
+			this.commentMenu(c, isRoot).showAtMouseEvent(e);
+		};
+		row.addEventListener('dblclick', openMenu);
+		row.addEventListener('contextmenu', openMenu);
 		const meta = row.createDiv({ cls: 'folio-comment-meta' });
 		if (!isRoot) meta.createSpan({ cls: 'folio-date', text: shortDate(c.created), attr: { 'aria-label': fullDate(c.created) } });
 		if (c.edited) meta.createSpan({ cls: 'folio-edited', text: '(edited)', attr: { 'aria-label': `Edited ${fullDate(c.edited)}` } });
@@ -335,6 +347,32 @@ export class ThreadCard {
 		return el;
 	}
 
+	private commentMenu(c: Comment, isRoot: boolean): Menu {
+		const t = this.thread;
+		const menu = new Menu();
+		if (t && !t.resolved) {
+			menu.addItem((i) => i.setTitle('Reply to this comment').setIcon('reply').onClick(() => this.setReplyTarget(c.id)));
+			menu.addItem((i) => i.setTitle('Edit').setIcon('pencil').onClick(() => this.startEdit(c.id)));
+		}
+		menu.addItem((i) =>
+			i
+				.setTitle('Copy text')
+				.setIcon('copy')
+				.onClick(() => void navigator.clipboard.writeText(c.body).then(() => new Notice('Comment copied'))),
+		);
+		menu.addItem((i) => i.setTitle('Go to the commented text').setIcon('locate').onClick(() => this.host.goTo(this.id)));
+		menu.addSeparator();
+		if (t) menu.addItem((i) => i.setTitle(t.resolved ? 'Re-open thread' : 'Resolve thread').setIcon(t.resolved ? 'rotate-ccw' : 'check').onClick(() => this.host.resolve(this.id, !t.resolved)));
+		menu.addItem((i) =>
+			i
+				.setTitle(isRoot ? 'Delete thread' : 'Delete comment')
+				.setIcon('trash')
+				.setWarning(true)
+				.onClick(() => (isRoot ? this.confirmDeleteThread() : this.host.deleteComment(this.id, c.id))),
+		);
+		return menu;
+	}
+
 	private renderFooter(thread: Thread, state: CardState): void {
 		const showReply = (state.active || this.mode === 'sidebar') && !thread.resolved;
 		this.footerEl.toggle(showReply);
@@ -348,15 +386,13 @@ export class ThreadCard {
 				rows: 1,
 				onSubmit: (text) => {
 					if (this.host.reply(this.id, this.replyTarget, text)) {
-						this.replyComposer!.textarea.value = '';
-						this.replyComposer!.el.removeClass('has-text');
+						this.replyComposer!.reset();
 						this.replyTarget = null;
 						this.updateReplyTarget();
 					}
 				},
 				onCancel: () => {
-					this.replyComposer!.textarea.value = '';
-					this.replyComposer!.textarea.style.height = '';
+					this.replyComposer!.reset();
 					this.replyTarget = null;
 					this.updateReplyTarget();
 				},

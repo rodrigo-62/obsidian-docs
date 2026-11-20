@@ -162,9 +162,10 @@ export const folioField = StateField.define<FolioState>({
 			else if (e.is(setShowResolved) && ui.showResolved !== e.value) ui = { ...ui, showResolved: e.value };
 			else if (e.is(flashThread)) ui = { ...ui, flash: e.value ? { id: e.value, n: (ui.flash?.n ?? 0) + 1 } : null };
 		}
-		// Moving the cursor into commented text activates that thread (as in Google Docs),
-		// unless the transaction says which thread is active.
-		if (tr.selection && tr.isUserEvent('select') && !tr.effects.some((e) => e.is(setActive))) {
+		// A cursor (empty selection) inside commented text activates that thread, however it
+		// got there: click, arrows, typing. A non-empty selection doesn't change the active
+		// thread (as in Google Docs). An explicit setActive in the transaction wins.
+		if (tr.selection && tr.selection.main.empty && !tr.effects.some((e) => e.is(setActive))) {
 			const probe = { ...value, doc, ui } as FolioState;
 			const id = threadAt(probe, tr.selection.main.head);
 			if (id !== ui.activeId && (id !== null || !ui.draft)) ui = { ...ui, activeId: id };

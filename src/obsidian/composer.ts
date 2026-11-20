@@ -20,6 +20,8 @@ export interface Composer {
 	el: HTMLElement;
 	textarea: HTMLTextAreaElement;
 	focus(): void;
+	/** Empty the box and shrink it back to its idle size. */
+	reset(): void;
 }
 
 export function createComposer(parent: HTMLElement, opts: ComposerOptions): Composer {
@@ -101,8 +103,14 @@ export function createComposer(parent: HTMLElement, opts: ComposerOptions): Comp
 		textarea.setSelectionRange(n, n);
 		grow();
 	};
+	const reset = () => {
+		textarea.value = '';
+		textarea.style.height = '';
+		el.removeClass('has-text');
+		updateState();
+	};
 	if (opts.autofocus) window.setTimeout(focus, 0);
-	return { el, textarea, focus };
+	return { el, textarea, focus, reset };
 }
 
 /** Modal version of the composer. */

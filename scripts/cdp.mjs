@@ -14,11 +14,13 @@ let id = 0; const pending = new Map(); const logs = [];
 ws.addEventListener('message', (m) => { const d = JSON.parse(m.data); if (d.id && pending.has(d.id)) { pending.get(d.id)(d); pending.delete(d.id); } else if (d.method === 'Runtime.consoleAPICalled') logs.push(d.params.type + ': ' + d.params.args.map(a => a.value ?? a.description).join(' ')); else if (d.method === 'Runtime.exceptionThrown') logs.push('EXCEPTION: ' + (d.params.exceptionDetails.exception?.description ?? d.params.exceptionDetails.text)); });
 const send = (method, params) => new Promise(r => { const i = ++id; pending.set(i, r); ws.send(JSON.stringify({ id: i, method, params })); });
 await send('Runtime.enable', {});
+await send('Emulation.setFocusEmulationEnabled', { enabled: true }); // paint the caret although the window isn't focused
 const res = await send('Runtime.evaluate', { expression: `(async () => { ${expr} })()`, awaitPromise: true, returnByValue: true });
 await new Promise(r => setTimeout(r, 300));
 console.log(JSON.stringify(res.result?.result?.value ?? res.result, null, 1));
 if (process.argv[3]) {
-  const shot = await send('Page.captureScreenshot', { format: 'png' });
+  const clip = res.result?.result?.value?.__clip; // a script may return { __clip: {x,y,width,height} } to zoom in
+  const shot = await send('Page.captureScreenshot', clip ? { format: 'png', clip: { ...clip, scale: 2 } } : { format: 'png' });
   (await import('node:fs')).writeFileSync(process.argv[3], Buffer.from(shot.result.data, 'base64'));
   console.log('screenshot ->', process.argv[3]);
 }

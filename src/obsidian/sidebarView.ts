@@ -38,6 +38,10 @@ export class CommentsSidebarView extends ItemView {
 				const v = cm();
 				if (v) revealThread(v, id, { select: true });
 			},
+			goTo: (id) => {
+				const v = cm();
+				if (v) revealThread(v, id, { select: true, center: true, focus: true });
+			},
 			hover: (id) => {
 				const v = cm();
 				if (v && v.state.field(folioField, false)?.ui.hoverId !== id) v.dispatch({ effects: setHover.of(id) });
@@ -114,6 +118,9 @@ export class CommentsSidebarView extends ItemView {
 	}
 
 	private render(): void {
+		const size = this.plugin.settings.commentFontSize;
+		if (size > 0) this.contentEl.style.setProperty('--folio-comment-size', `${size}px`);
+		else this.contentEl.style.removeProperty('--folio-comment-size');
 		// A missing or closed source: fall back to the most recent note.
 		if (!this.source || !this.source.file || !editorViewOf(this.source)) {
 			const v = this.plugin.lastMarkdownView();

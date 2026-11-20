@@ -32,7 +32,7 @@ describe('layoutCards', () => {
 		expect(obj(m)).toEqual({ a: 50, b: 110, c: 170 });
 	});
 
-	it('pushing up stops at minTop and then stacks down', () => {
+	it('the active card stays at its anchor even if earlier cards go off the top', () => {
 		const m = layoutCards(
 			[
 				{ id: 'a', ideal: 0, height: 50 },
@@ -40,7 +40,12 @@ describe('layoutCards', () => {
 			],
 			{ gap: 10, activeId: 'b', minTop: 0 },
 		);
-		expect(obj(m)).toEqual({ a: 0, b: 60 });
+		expect(obj(m)).toEqual({ a: -50, b: 10 });
+	});
+
+	it('without an active card, nothing starts above minTop', () => {
+		const m = layoutCards([{ id: 'a', ideal: -30, height: 50 }], { gap: 10, minTop: 0 });
+		expect(obj(m)).toEqual({ a: 0 });
 	});
 
 	it('keeps document order for equal ideals', () => {
@@ -63,13 +68,8 @@ describe('layoutCards', () => {
 			const m = layoutCards(cards, { gap: 8, activeId: active, minTop: 0 });
 			const placed = cards.map((c) => ({ ...c, top: m.get(c.id)! })).sort((a, b) => a.top - b.top);
 			for (let i = 1; i < placed.length; i++) expect(placed[i]!.top).toBeGreaterThanOrEqual(placed[i - 1]!.top + placed[i - 1]!.height + 8 - 1e-9);
-			expect(placed[0]!.top).toBeGreaterThanOrEqual(0);
-			if (active && m.get(active)! >= 0) {
-				const a = cards.find((c) => c.id === active)!;
-				// the active card is at its ideal unless the top of the document got in the way
-				const fitsAbove = m.get(active) === a.ideal || placed[0]!.top === 0;
-				expect(fitsAbove).toBe(true);
-			}
+			if (active) expect(m.get(active)).toBe(cards.find((c) => c.id === active)!.ideal);
+			else expect(placed[0]!.top).toBeGreaterThanOrEqual(0);
 		}
 	});
 });

@@ -138,7 +138,7 @@ export function repairMarkers(view: EditorView): number {
 }
 
 /** Select a thread's text, scroll to it and mark it active. */
-export function revealThread(view: EditorView, id: string, opts: { select?: boolean; focus?: boolean } = {}): void {
+export function revealThread(view: EditorView, id: string, opts: { select?: boolean; focus?: boolean; center?: boolean } = {}): void {
 	const st = view.state.field(folioField, false);
 	const a = st?.doc.markers.anchors.get(id);
 	if (!a) {
@@ -147,7 +147,7 @@ export function revealThread(view: EditorView, id: string, opts: { select?: bool
 	}
 	view.dispatch({
 		selection: opts.select === false ? undefined : { anchor: a.textFrom, head: a.textTo },
-		effects: [setActive.of(id), EditorView.scrollIntoView(a.textFrom, { y: 'nearest', yMargin: 80 })],
+		effects: [setActive.of(id), EditorView.scrollIntoView(a.textFrom, opts.center ? { y: 'center' } : { y: 'nearest', yMargin: 80 })],
 		annotations: Transaction.userEvent.of('select.folio'),
 	});
 	if (opts.focus) view.focus();

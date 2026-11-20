@@ -64,6 +64,8 @@ describe('toolbar', () => {
 			toggleResolved: () => (resolved = !resolved),
 			showResolved: () => resolved,
 			openSidebar: () => undefined,
+			commentFontSize: () => 0,
+			setCommentFontSize: () => undefined,
 		});
 		tb.update(readDocSettings({ folio: true, 'folio-zoom': 125, 'folio-font-size': 13, 'folio-theme': 'light' }));
 		const el = (v as unknown as { contentEl: HTMLElement }).contentEl;

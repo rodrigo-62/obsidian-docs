@@ -14,6 +14,7 @@ import { applyPageStyle, clearAllPageStyles } from './pageStyle';
 import { DocToolbar, THEME_ORDER } from './toolbar';
 import { clampTweak } from '../core/paperPalette';
 import { footnoteAction } from '../core/footnotes';
+import { adjacentHeading } from '../core/headings';
 
 export default class FolioPlugin extends Plugin {
 	settings!: FolioSettings;
@@ -102,6 +103,7 @@ export default class FolioPlugin extends Plugin {
 		return {
 			app: this.app,
 			marginWidth: () => this.settings.marginWidth,
+			commentFontSize: () => this.settings.commentFontSize,
 			isMainEditor: (view) => this.markdownViews().some((v) => editorViewOf(v) === view),
 			sourcePath: (view) => view.state.field(editorInfoField, false)?.file?.path ?? '',
 			isTree: (path, id) => this.isTree(path, id),
@@ -238,6 +240,11 @@ export default class FolioPlugin extends Plugin {
 				copyForLLM: () => void copyForLLM(this, view),
 				copyOptions: () => new CopyOptionsModal(this, view).open(),
 				toggleResolved: () => void this.toggleShowResolved(),
+				commentFontSize: () => this.settings.commentFontSize,
+				setCommentFontSize: (px) => {
+					this.settings.commentFontSize = px;
+					void this.saveSettings().then(() => this.sidebar()?.refresh());
+				},
 				showResolved: () => this.settings.showResolved,
 				openSidebar: () => {
 					this.lastMarkdown = view;
@@ -430,6 +437,18 @@ export default class FolioPlugin extends Plugin {
 			if (!checking) fn(cm, ctx);
 			return true;
 		};
+		const jumpHeading = (dir: 1 | -1) =>
+			withCm((cm) => {
+				const h = adjacentHeading(cm.state.doc.toString(), cm.state.selection.main.head, dir);
+				if (!h) {
+					new Notice(dir > 0 ? 'Folio: no heading below.' : 'Folio: no heading above.');
+					return;
+				}
+				cm.dispatch({ selection: { anchor: h.text }, effects: EditorView.scrollIntoView(h.text, { y: 'start', yMargin: 60 }), userEvent: 'select' });
+				cm.focus();
+			});
+		this.addCommand({ id: 'next-heading', name: 'Go to next heading', hotkeys: [{ modifiers: ['Mod', 'Alt'], key: 'ArrowDown' }], editorCheckCallback: jumpHeading(1) });
+		this.addCommand({ id: 'previous-heading', name: 'Go to previous heading', hotkeys: [{ modifiers: ['Mod', 'Alt'], key: 'ArrowUp' }], editorCheckCallback: jumpHeading(-1) });
 		this.addCommand({
 			id: 'footnote',
 			name: 'Insert footnote, or jump between a footnote and its reference',

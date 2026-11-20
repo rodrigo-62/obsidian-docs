@@ -9,7 +9,7 @@ import { DEFAULT_TWEAKS, paperVars, type PaperKind, type ThemeTweak } from '../c
 const CLASSES = ['folio-doc', 'folio-theme-light', 'folio-theme-sepia', 'folio-theme-dark'];
 /** Palette variables set inline (cleared again with the rest). */
 const PALETTE_VARS = Object.keys(paperVars('light', DEFAULT_TWEAKS.light));
-const VARS = ['--folio-font-px', '--folio-page-width', '--folio-page-pad-x', '--folio-page-pad-y', '--font-preferred-size', '--file-line-width', '--font-text', '--folio-zoom'];
+const VARS = ['--font-text-size', '--folio-font-px', '--folio-page-width', '--folio-page-pad-x', '--folio-page-pad-y', '--font-preferred-size', '--file-line-width', '--font-text', '--folio-zoom'];
 
 const styled = new Set<HTMLElement>();
 
@@ -34,6 +34,8 @@ export function applyPageStyle(view: MarkdownView, s: DocSettings | null, tweaks
 	el.style.setProperty('--folio-page-pad-y', `${Math.round(m.fontPx * 3)}px`);
 	// Obsidian resolves --font-preferred-size on <body>; it must be overridden directly (docs/RESEARCH.md).
 	el.style.setProperty('--font-preferred-size', `${m.fontPx}px`);
+	// Obsidian < 1.13 sizes the editor from --font-text-size instead (found by testing 1.10.3)
+	el.style.setProperty('--font-text-size', `${m.fontPx}px`);
 	el.style.setProperty('--file-line-width', `${m.widthPx}px`);
 	if (s.font) el.style.setProperty('--font-text', `${cssFontName(s.font)}, var(--font-default)`);
 	else el.style.removeProperty('--font-text');

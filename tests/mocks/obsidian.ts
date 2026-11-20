@@ -186,6 +186,7 @@ export const editorInfoField = StateField.define<{ file: { path: string } | null
 });
 
 export class App {}
+
 export class Scope {
 	keys: { mods: string[] | null; key: string | null; fn: () => unknown }[] = [];
 	constructor(public parent?: unknown) {}

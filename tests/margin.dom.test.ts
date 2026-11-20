@@ -30,6 +30,7 @@ function setup(doc: string) {
 	const ctx: MarginContext = {
 		app: {} as never,
 		marginWidth: () => 300,
+		commentFontSize: () => 0,
 		isMainEditor: () => true,
 		sourcePath: () => 'test.md',
 		isTree: (_p, id) => tree.get(id) ?? false,
