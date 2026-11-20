@@ -73,6 +73,7 @@ export function installInto(vault) {
 		for (const k of added) current[k] = SUGGESTED_HOTKEYS[k];
 		writeFileSync(hkPath, JSON.stringify(current, null, 2));
 		notes.push(`added ${added.length} suggested hotkey${added.length === 1 ? '' : 's'} (Ctrl+Alt+M/C/F/./,/↓/↑) where you had none`);
+		notes.push('RESTART Obsidian in this vault now: it reads hotkeys only at startup (and changing a hotkey before restarting would overwrite these)');
 	}
 	return notes;
 }

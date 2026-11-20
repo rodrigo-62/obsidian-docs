@@ -27,4 +27,4 @@ for (const v of vaults) {
 		console.error(`skip ${v}: ${e.message}`);
 	}
 }
-console.log(ok ? `Done (${ok} vault${ok === 1 ? '' : 's'}). Without Hot Reload there: toggle Docs off/on, or Ctrl+P → "Reload app without saving".` : 'Nothing updated.');
+console.log(ok ? `Done (${ok} vault${ok === 1 ? '' : 's'}). Without Hot Reload there: toggle Docs off/on, or Ctrl+P → "Reload app without saving". If hotkeys were added above, restart Obsidian instead.` : 'Nothing updated.');
