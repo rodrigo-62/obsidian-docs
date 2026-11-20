@@ -117,3 +117,12 @@ Decisions made autonomously where the spec said "confirm with me", "stop and ask
 - **F3.8 Google-Docs-like focus.** Inactive cards are flat, tinted and borderless. The active card has the page colour, a lifted shadow, a soft highlight-coloured outline (also visible on black themes), and steps 16 px out towards the text. The idle reply field is pill-shaped.
 - **F3.9 Heading navigation**: *Go to next heading* (`Mod+Alt+↓`) and *Go to previous heading* (`Mod+Alt+↑`) put the cursor at the start of the heading's text and scroll it near the top. Headings in code and the thread block are ignored. Rebind them if your desktop uses these keys (some use Ctrl+Alt+arrows to switch workspaces).
 - **F3.10 Headless checks run against your Obsidian version.** `scripts/obsidian-headless.sh` now works on a fresh copy of the test vault (`.scratch/headless-vault`, plugin folder symlinked to the build), so it never shares files with an Obsidian you have open. `OBSIDIAN_ASAR=…` runs a given Obsidian build (a copy of the auto-updated 1.15.1 was used). F3.1, F3.5–F3.8 were measured or seen there.
+
+## Feedback round 4
+
+- **F4.1 Comment text size applies immediately.** The size variable was only written during a measure pass, which a setting change didn't trigger (hovering did). It's now set when the margin syncs, and a re-layout is scheduled.
+- **F4.2 ⚠ Crisper card text.** Cards were placed with `transform: translateY()` plus `will-change`, which puts them on GPU layers where text renders slightly softer. They now use `top` (with a `top` transition), at a small layout cost per move.
+- **F4.3 Dropdown arrows follow the page theme.** Obsidian picks the arrow SVG by `body.theme-dark`, so a light or sepia page inside a dark app had white arrows. Page-theme overrides use Obsidian's own two SVGs.
+- **F4.4** The active card steps out 8 px (was 16). In dark page or app themes its outline is a pastel gold (`--folio-active-outline`).
+- **F4.5 `npm run update-vaults`** builds, then installs into every vault in `.install-targets` (gitignored, one path per line), and adds a `.hotreload` marker so Hot Reload, if installed there, reloads Folio. Claude must never run it (CLAUDE.md).
+- **F4.6 Headless testing fix.** The vault copy used to symlink the whole plugin folder, so it shared (and once changed) the test vault's `data.json`. Now only the three build files are linked.

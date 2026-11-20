@@ -141,3 +141,11 @@ Make the Obsidian window wide (≥ 1100 px editor pane). Open *Essays/A Short Hi
 - [ ] Double-click (or right-click) a comment in a card. A menu offers Reply to this comment, Edit, Copy text, Go to the commented text, Resolve, and Delete.
 - [ ] The active card stands out: page-coloured, shadow, soft outline, shifted slightly towards the text. Inactive cards are flat and tinted.
 - [ ] **Ctrl+Alt+↓ / Ctrl+Alt+↑** jump to the next or previous heading. (If nothing happens, your desktop may be taking these keys; rebind under Settings → Hotkeys → "Folio: Go to next heading".)
+
+## Feedback round 4
+
+- [ ] Change the toolbar **Aa** size: the comment cards change at once, without hovering.
+- [ ] Comment text looks as sharp as the page text.
+- [ ] Light or sepia page in a dark app: the toolbar dropdown arrows (zoom, font, width, Aa) are dark.
+- [ ] The active card steps only slightly towards the page. In dark mode its outline is a soft pastel gold.
+- [ ] `npm run update-vaults` updates `/home/parrhasius/vault` (with Hot Reload there it reloads by itself; otherwise toggle Folio off and on).
