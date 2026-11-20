@@ -64,6 +64,18 @@ export function installDomHelpers(): void {
 	P.isShown = function (this: HTMLElement) {
 		return this.style.display !== 'none';
 	};
+	P.setCssProps = function (this: HTMLElement, props: Record<string, string>) {
+		for (const [k, v] of Object.entries(props)) this.style.setProperty(k.replace(/[A-Z]/g, (m) => '-' + m.toLowerCase()), v);
+	};
+	(Node.prototype as unknown as Record<string, unknown>).instanceOf = function (this: Node, T: new () => unknown) {
+		return this instanceof T;
+	};
+	(globalThis as Record<string, unknown>).activeDocument = document;
+	(globalThis as Record<string, unknown>).createEl = (tag: string, o?: ElOpts) => {
+		const el = document.createElement(tag);
+		applyOpts(el, o);
+		return el;
+	};
 	(globalThis as Record<string, unknown>).createSpan = (o?: ElOpts) => {
 		const el = document.createElement('span');
 		applyOpts(el, o);

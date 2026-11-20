@@ -50,7 +50,7 @@ export function isFontInstalled(name: string): boolean {
 	if (!name) return true;
 	const hit = cache.get(name);
 	if (hit !== undefined) return hit;
-	ctx ??= document.createElement('canvas').getContext('2d');
+	ctx ??= createEl('canvas').getContext('2d');
 	if (!ctx) return true;
 	const sample = 'mmmmmmmmmmlliiWW@#0123456789 The quick brown fox';
 	let installed = false;

@@ -238,7 +238,7 @@ export function extractSection(md: string, subpath: string): string | null {
 			.join('\n')
 			.replace(/\s\^[\w-]+\s*$/, '');
 	}
-	const norm = (s: string) => s.replace(/<!--\/?c:[A-Za-z0-9]+-->|​/g, '').replace(/[\s#]+$/, '').trim().toLowerCase();
+	const norm = (s: string) => s.replace(/<!--\/?c:[A-Za-z0-9]+-->|\u200b/g, '').replace(/[\s#]+$/, '').trim().toLowerCase();
 	const want = norm(last);
 	let start = -1;
 	let level = 0;
@@ -605,7 +605,7 @@ export function exportForLLM(markdown: string, threads: Threads, options: Export
 }
 
 function stripAll(s: string): string {
-	return s.replace(/​?<!--\/?c:[A-Za-z0-9]+-->/g, '');
+	return s.replace(/\u200b?<!--\/?c:[A-Za-z0-9]+-->/g, '');
 }
 
 function hasHighlight(md: string, from: number, to: number, code: Range[]): boolean {
@@ -617,7 +617,7 @@ function hasHighlight(md: string, from: number, to: number, code: Range[]): bool
 }
 
 export function countWords(text: string): number {
-	const m = text.match(/[\p{L}\p{N}][\p{L}\p{N}'’\-]*/gu);
+	const m = text.match(/[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu);
 	return m ? m.length : 0;
 }
 

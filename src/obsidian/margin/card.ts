@@ -52,6 +52,12 @@ function fullDate(iso: string): string {
 	return isNaN(d.getTime()) ? iso : fullFmt.format(d);
 }
 
+/** setDestructive() exists from Obsidian 1.13; older versions only have setWarning(). */
+function destructive<T extends { setWarning(): T }>(b: T): T {
+	const d = (b as unknown as { setDestructive?: () => T }).setDestructive;
+	return d ? d.call(b) : b.setWarning();
+}
+
 export class ConfirmModal extends Modal {
 	constructor(app: App, private message: string, private cta: string, private onYes: () => void) {
 		super(app);
@@ -61,9 +67,8 @@ export class ConfirmModal extends Modal {
 		new Setting(this.contentEl)
 			.addButton((b) => b.setButtonText('Cancel').onClick(() => this.close()))
 			.addButton((b) =>
-				b
+				destructive(b)
 					.setButtonText(this.cta)
-					.setWarning()
 					.onClick(() => {
 						this.close();
 						this.onYes();

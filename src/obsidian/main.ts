@@ -9,7 +9,7 @@ import { ComposerModal } from './composer';
 import { marginContext, marginExtensions, marginIsWide, marginPlugin, refreshMargin, type MarginContext } from './margin/marginView';
 import { CommentsSidebarView, SIDEBAR_VIEW } from './sidebarView';
 import { clearReadingCache, makeReadingPostProcessor } from './reading';
-import { KEYS, LEGACY_KEYS, hasLegacyKeys, migrateFrontmatter, readDocSettings, stepFontSize, stepZoom, toFrontmatter, type DocSettings, type PageSettings, type ThemeChoice } from '../core/docSettings';
+import { KEYS, LEGACY_KEYS, hasLegacyKeys, migrateFrontmatter, readDocSettings, stepFontSize, stepZoom, toFrontmatter, type DocSettings, type PageSettings } from '../core/docSettings';
 import { applyPageStyle, clearAllPageStyles } from './pageStyle';
 import { DocToolbar, THEME_ORDER } from './toolbar';
 import { clampTweak } from '../core/paperPalette';
@@ -61,10 +61,10 @@ export default class FolioPlugin extends Plugin {
 			}),
 		);
 		this.registerEvent(this.app.workspace.on('file-open', () => this.refreshAllViews()));
-		this.registerDomEvent(document, 'wheel', (e) => this.onWheel(e), { passive: false });
+		this.registerDomEvent(activeDocument, 'wheel', (e) => this.onWheel(e), { passive: false });
 		this.registerMarkdownPostProcessor(makeReadingPostProcessor(() => this.settings.showResolved));
 		// Reading view: clicking a highlight shows the thread in the sidebar.
-		this.registerDomEvent(document, 'click', (e) => {
+		this.registerDomEvent(activeDocument, 'click', (e) => {
 			const hl = (e.target as HTMLElement | null)?.closest?.('.markdown-reading-view .folio-hl[data-folio-id]');
 			if (!hl) return;
 			const id = hl.getAttribute('data-folio-id')!;
@@ -220,7 +220,7 @@ export default class FolioPlugin extends Plugin {
 	docSettings(file: TFile): DocSettings {
 		const o = this.optimistic.get(file.path);
 		if (o && Date.now() - o.at < 5000) return o.s;
-		const fm = this.app.metadataCache.getFileCache(file)?.frontmatter as Record<string, unknown> | undefined;
+		const fm = this.app.metadataCache.getFileCache(file)?.frontmatter;
 		return readDocSettings(fm, this.pageDefaults());
 	}
 
@@ -329,7 +329,7 @@ export default class FolioPlugin extends Plugin {
 		let keys = 0;
 		let blocks = 0;
 		for (const file of this.app.vault.getMarkdownFiles()) {
-			const fm = this.app.metadataCache.getFileCache(file)?.frontmatter as Record<string, unknown> | undefined;
+			const fm = this.app.metadataCache.getFileCache(file)?.frontmatter;
 			if (hasLegacyKeys(fm)) {
 				await this.app.fileManager.processFrontMatter(file, (f: Record<string, unknown>) => {
 					if (migrateFrontmatter(f)) keys++;
@@ -402,7 +402,6 @@ export default class FolioPlugin extends Plugin {
 		this.addCommand({
 			id: 'copy-for-llm',
 			name: 'Copy for LLM',
-			hotkeys: [{ modifiers: ['Mod', 'Alt'], key: 'c' }],
 			checkCallback: withView((v) => void copyForLLM(this, v)),
 		});
 		this.addCommand({
@@ -482,12 +481,11 @@ export default class FolioPlugin extends Plugin {
 				cm.dispatch({ selection: { anchor: h.text }, effects: EditorView.scrollIntoView(h.text, { y: 'start', yMargin: 60 }), userEvent: 'select' });
 				cm.focus();
 			});
-		this.addCommand({ id: 'next-heading', name: 'Go to next heading', hotkeys: [{ modifiers: ['Mod', 'Alt'], key: 'ArrowDown' }], editorCheckCallback: jumpHeading(1) });
-		this.addCommand({ id: 'previous-heading', name: 'Go to previous heading', hotkeys: [{ modifiers: ['Mod', 'Alt'], key: 'ArrowUp' }], editorCheckCallback: jumpHeading(-1) });
+		this.addCommand({ id: 'next-heading', name: 'Go to next heading', editorCheckCallback: jumpHeading(1) });
+		this.addCommand({ id: 'previous-heading', name: 'Go to previous heading', editorCheckCallback: jumpHeading(-1) });
 		this.addCommand({
 			id: 'footnote',
 			name: 'Insert footnote, or jump between a footnote and its reference',
-			hotkeys: [{ modifiers: ['Mod', 'Alt'], key: 'f' }],
 			editorCheckCallback: (checking, _e, ctx) => {
 				const cm = ctx instanceof MarkdownView ? editorViewOf(ctx) : null;
 				if (!cm || !(ctx instanceof MarkdownView) || ctx.getMode() !== 'source') return false;
@@ -498,13 +496,11 @@ export default class FolioPlugin extends Plugin {
 		this.addCommand({
 			id: 'next-comment',
 			name: 'Go to next comment',
-			hotkeys: [{ modifiers: ['Mod', 'Alt'], key: '.' }],
 			editorCheckCallback: withCm((cm) => this.jumpComment(cm, 1)),
 		});
 		this.addCommand({
 			id: 'previous-comment',
 			name: 'Go to previous comment',
-			hotkeys: [{ modifiers: ['Mod', 'Alt'], key: ',' }],
 			editorCheckCallback: withCm((cm) => this.jumpComment(cm, -1)),
 		});
 		this.addCommand({
@@ -589,7 +585,6 @@ export default class FolioPlugin extends Plugin {
 		this.addCommand({
 			id: 'add-comment',
 			name: 'Add comment',
-			hotkeys: [{ modifiers: ['Mod', 'Alt'], key: 'm' }],
 			editorCheckCallback: (checking, _editor, ctx) => {
 				if (!(ctx instanceof MarkdownView)) return false;
 				if (!checking) this.addComment(ctx);

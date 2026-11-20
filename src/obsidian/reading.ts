@@ -21,7 +21,7 @@ function parse(path: string, md: string): DocComments {
 
 function textNodes(root: HTMLElement): Text[] {
 	const out: Text[] = [];
-	const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+	const walker = activeDocument.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
 		acceptNode: (n) => ((n.parentElement?.closest('.frontmatter, .frontmatter-container, .footnotes, sup.footnote-ref') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT)),
 	});
 	for (let n = walker.nextNode(); n; n = walker.nextNode()) out.push(n as Text);
@@ -50,7 +50,7 @@ function wrap(root: HTMLElement, needle: string, occurrence: number, id: string,
 		if (b <= a) return;
 		if (a > 0) target = target.splitText(a);
 		if (b - a < target.data.length) target.splitText(b - a);
-		const span = document.createElement('span');
+		const span = createSpan();
 		span.className = `folio-hl folio-hl-reading ${extraClass}`.trim();
 		span.setAttribute('data-folio-id', id);
 		target.parentNode?.insertBefore(span, target);

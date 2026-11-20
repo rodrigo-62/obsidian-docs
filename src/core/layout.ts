@@ -48,9 +48,9 @@ export function layoutCards(cards: CardBox[], opts: LayoutOptions = {}): Map<str
 		const active = sorted[k]!;
 		tops[k] = active.ideal;
 		// cards after the active one: pushed down
-		forward(k + 1, tops[k]! + active.height + gap);
+		forward(k + 1, tops[k] + active.height + gap);
 		// cards before it: pushed up
-		let ceiling = tops[k]! - gap;
+		let ceiling = tops[k] - gap;
 		for (let i = k - 1; i >= 0; i--) {
 			const c = sorted[i]!;
 			const t = Math.min(c.ideal, ceiling - c.height);

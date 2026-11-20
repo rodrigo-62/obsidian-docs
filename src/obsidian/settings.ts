@@ -71,7 +71,6 @@ export class FolioSettingTab extends PluginSettingTab {
 				sl
 					.setLimits(50, 200, 5)
 					.setValue(s.defaultZoom)
-					.setDynamicTooltip()
 					.onChange(async (v) => {
 						s.defaultZoom = v;
 						await save();
@@ -84,7 +83,6 @@ export class FolioSettingTab extends PluginSettingTab {
 				sl
 					.setLimits(20, 100, 1)
 					.setValue(s.defaultWidth)
-					.setDynamicTooltip()
 					.onChange(async (v) => {
 						s.defaultWidth = v;
 						await save();
@@ -109,7 +107,6 @@ export class FolioSettingTab extends PluginSettingTab {
 				sl
 					.setLimits(8, 32, 1)
 					.setValue(s.defaultFontSize)
-					.setDynamicTooltip()
 					.onChange(async (v) => {
 						s.defaultFontSize = v;
 						await save();
@@ -144,7 +141,6 @@ export class FolioSettingTab extends PluginSettingTab {
 				sl
 					.setLimits(220, 480, 10)
 					.setValue(s.marginWidth)
-					.setDynamicTooltip()
 					.onChange(async (v) => {
 						s.marginWidth = v;
 						await save();
@@ -252,7 +248,6 @@ export class FolioSettingTab extends PluginSettingTab {
 						sl
 							.setLimits(lo, hi, 1)
 							.setValue(clampTweak(kind, s.themeTweaks[kind])[key])
-							.setDynamicTooltip()
 							.onChange(async (v) => {
 								s.themeTweaks[kind] = { ...clampTweak(kind, s.themeTweaks[kind]), [key]: v };
 								await this.plugin.saveSettings();

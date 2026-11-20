@@ -9,6 +9,7 @@
 - Phase order (the user's priority): 0, 2, 3, 4, 5, 6, then 1 last. Comments and copy-for-LLM matter most; page appearance matters least.
 - After each phase: `npm test` and `npm run build` must pass. Then update `docs/TESTING.md` and the status section below, and commit with a clear message.
 - `src/core/` is **pure TypeScript with no `obsidian` import**, unit-tested with vitest in `tests/`. Obsidian and CodeMirror glue goes in `src/obsidian/`.
+- No default hotkeys in `addCommand` (Obsidian guideline); suggested ones go in the README.
 - Notes are written through editor transactions when open, and through `app.vault.process` otherwise. Never use raw `vault.modify` on stale content. Frontmatter is written with `app.fileManager.processFrontMatter`.
 - Page styling goes on the view's container element, **never on `body`**.
 
@@ -17,6 +18,7 @@
 - `npm run dev`: watch build into `test-vault/.obsidian/plugins/docs/` (Hot Reload picks it up)
 - `npm run build`: typecheck plus production build (also copied into the test vault)
 - `npm test`: vitest for `src/core/`
+- `npm run lint`: eslint-plugin-obsidianmd (Obsidian's review rules). Keep it at 0 errors.
 - `npm run vault:reset`: regenerate the sample notes
 
 ## Seeing the real UI

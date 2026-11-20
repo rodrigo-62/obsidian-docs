@@ -20,7 +20,7 @@ import {
 } from './mdScan';
 import { findThreadBlock, type Change, type ThreadBlock } from './threadStore';
 
-export const GUARD = '​';
+export const GUARD = '\u200b';
 /** Matches one marker, with its optional guard. Group 1: "/" for an end marker. Group 2: the id. */
 export const MARKER_SOURCE = '\\u200b?<!--(\\/?)c:([A-Za-z0-9]+)-->';
 export const markerRegex = (): RegExp => new RegExp(MARKER_SOURCE, 'g');
@@ -220,7 +220,7 @@ export function planAnchorInsertion(md: string, selFrom: number, selTo: number, 
 
 /** Changes removing a marker; its guard is kept if another marker directly follows (that one still needs it). */
 export function markerRemoval(md: string, mk: Marker): Change {
-	if (mk.guard && /^​?<!--\/?c:[A-Za-z0-9]+-->/.test(md.slice(mk.to, mk.to + 40))) {
+	if (mk.guard && /^\u200b?<!--\/?c:[A-Za-z0-9]+-->/.test(md.slice(mk.to, mk.to + 40))) {
 		return { from: mk.from + 1, to: mk.to, insert: '' };
 	}
 	return { from: mk.from, to: mk.to, insert: '' };

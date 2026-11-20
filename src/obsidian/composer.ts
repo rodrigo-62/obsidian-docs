@@ -34,8 +34,8 @@ export function createComposer(parent: HTMLElement, opts: ComposerOptions): Comp
 	const cancel = actions.createEl('button', { cls: 'folio-btn', text: 'Cancel' });
 	const submit = actions.createEl('button', { cls: 'folio-btn mod-cta', text: opts.submitLabel ?? 'Comment' });
 	const grow = () => {
-		textarea.style.height = 'auto';
-		textarea.style.height = `${Math.min(textarea.scrollHeight, 400)}px`;
+		textarea.style.removeProperty('height'); // natural height, to measure scrollHeight
+		textarea.setCssProps({ height: `${Math.min(textarea.scrollHeight, 400)}px` });
 	};
 	const updateState = () => submit.toggleClass('is-disabled', textarea.value.trim() === '');
 	textarea.addEventListener('input', () => {
@@ -50,8 +50,8 @@ export function createComposer(parent: HTMLElement, opts: ComposerOptions): Comp
 		opts.onCancel();
 		el.removeClass('has-text');
 		// leave the box (Cancel button or Esc): nothing in it keeps focus
-		const active = document.activeElement;
-		if (active instanceof HTMLElement && el.contains(active)) active.blur();
+		const active = activeDocument.activeElement;
+		if (active?.instanceOf(HTMLElement) && el.contains(active)) active.blur();
 	};
 	textarea.addEventListener('keydown', (e) => {
 		if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
@@ -105,7 +105,7 @@ export function createComposer(parent: HTMLElement, opts: ComposerOptions): Comp
 	};
 	const reset = () => {
 		textarea.value = '';
-		textarea.style.height = '';
+		textarea.style.removeProperty('height');
 		el.removeClass('has-text');
 		updateState();
 	};

@@ -14,18 +14,25 @@
 		"version": "node version-bump.mjs && git add manifest.json versions.json",
 		"vault:reset": "node scripts/build-test-vault.mjs",
 		"install-plugin": "node scripts/install-plugin.mjs",
-		"update-vaults": "npm run build && node scripts/update-vaults.mjs"
+		"update-vaults": "npm run build && node scripts/update-vaults.mjs",
+		"lint": "eslint ."
 	},
 	"license": "MIT",
 	"devDependencies": {
 		"@codemirror/state": "^6.7.6",
 		"@codemirror/view": "^6.43.13",
+		"@eslint/js": "^10.0.1",
 		"@types/node": "^22.20.5",
 		"esbuild": "^0.28.2",
+		"eslint": "^10.15.0",
+		"eslint-plugin-obsidianmd": "^0.6.0",
+		"globals": "^17.14.0",
 		"happy-dom": "^21.0.4",
+		"jiti": "^2.7.0",
 		"obsidian": "^1.14.4",
 		"tslib": "^2.9.1",
-		"typescript": "^7.0.2",
+		"typescript": "~6.0",
+		"typescript-eslint": "^8.73.0",
 		"vitest": "^5.1.1"
 	}
 }

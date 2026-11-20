@@ -185,9 +185,9 @@ export class CommentsSidebarView extends ItemView {
 		}
 		const current = Array.from(this.sbListEl.children);
 		if (current.length !== order.length || order.some((el, i) => current[i] !== el)) {
-			const focused = document.activeElement;
+			const focused = activeDocument.activeElement;
 			this.sbListEl.replaceChildren(...order);
-			if (focused instanceof HTMLElement && this.sbListEl.contains(focused)) focused.focus();
+			if (focused?.instanceOf(HTMLElement) && this.sbListEl.contains(focused)) focused.focus();
 		}
 		const active = st.ui.activeId ? this.cards.get(st.ui.activeId) : undefined;
 		if (active) active.el.scrollIntoView({ block: 'nearest' });

@@ -83,7 +83,7 @@ class HiddenBlockWidget extends WidgetType {
 		return other.count === this.count;
 	}
 	toDOM(): HTMLElement {
-		const el = document.createElement('span');
+		const el = createSpan();
 		el.className = 'folio-hidden-block';
 		el.setAttribute('aria-hidden', 'true');
 		return el;
@@ -166,7 +166,7 @@ export const folioField = StateField.define<FolioState>({
 		// got there: click, arrows, typing. A non-empty selection doesn't change the active
 		// thread (as in Google Docs). An explicit setActive in the transaction wins.
 		if (tr.selection && tr.selection.main.empty && !tr.effects.some((e) => e.is(setActive))) {
-			const probe = { ...value, doc, ui } as FolioState;
+			const probe = { ...value, doc, ui };
 			const id = threadAt(probe, tr.selection.main.head);
 			if (id !== ui.activeId && (id !== null || !ui.draft)) ui = { ...ui, activeId: id };
 		}

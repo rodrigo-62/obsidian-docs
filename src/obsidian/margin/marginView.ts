@@ -252,7 +252,7 @@ class MarginPlugin implements PluginValue {
 		// An empty draft disappears when focus leaves it (as in Google Docs).
 		comp.textarea.addEventListener('blur', () => {
 			window.setTimeout(() => {
-				if (this.draftEl && !this.draftEl.contains(document.activeElement) && comp.textarea.value.trim() === '') cancelDraft(this.view);
+				if (this.draftEl && !this.draftEl.contains(activeDocument.activeElement) && comp.textarea.value.trim() === '') cancelDraft(this.view);
 			}, 150);
 		});
 		this.draftEl = el;
@@ -310,7 +310,7 @@ class MarginPlugin implements PluginValue {
 		const activeId = this.draftEl ? DRAFT : st.ui.activeId;
 		const tops = layoutCards(boxes, { gap: GAP, activeId, minTop });
 		// horizontal: right of the text column
-		const sizer = (this.view.contentDOM.closest('.cm-sizer') as HTMLElement | null) ?? this.view.contentDOM;
+		const sizer = this.view.contentDOM.closest<HTMLElement>('.cm-sizer') ?? this.view.contentDOM;
 		const zRect = sizer.getBoundingClientRect();
 		let left = zRect.right - sRect.left + scroller.scrollLeft + 2 * GAP;
 		left = Math.min(left, scroller.clientWidth - width - GAP);
