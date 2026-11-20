@@ -27,5 +27,5 @@
 
 ## Current status / next step
 
-- **Done:** Phase 0 (setup, research, test vault).
-- **Next:** Phase 2 (comment core: `src/core/markers.ts`, `threadStore.ts`, `model.ts`, plus tests).
+- **Done:** Phase 0 (setup, research, test vault). Phase 2 (core: `mdScan.ts`, `markers.ts`, `threadStore.ts`, `model.ts`, `commentStore.ts` façade; 82 tests).
+- **Next:** Phase 3 (copy for LLM: `src/core/export.ts` plus tests, command, editor menu, header button).

@@ -63,7 +63,7 @@ The thread "dt5k" below has no markers at all: it should appear under **Detached
     "created": "2026-11-15T10:01:00Z",
     "resolved": false,
     "comments": [
-      { "id": "a1", "parent": null, "created": "2026-11-15T10:01:00Z", "body": "Second overlapping comment. Its body contains a tricky sequence: --> which must not end the HTML comment." }
+      { "id": "a1", "parent": null, "created": "2026-11-15T10:01:00Z", "body": "Second overlapping comment. Its body contains a tricky sequence: --\u003e which must not end the HTML comment." }
     ]
   },
   "ns1o": {

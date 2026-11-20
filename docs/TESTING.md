@@ -15,3 +15,7 @@ Claude can't see Obsidian's UI, so these are the by-hand checks. Each step says 
 
 - [ ] The vault opens and shows *Start here*, with a table linking 7 notes.
 - [ ] Settings → Community plugins lists Folio 0.1.0 as enabled.
+
+## Phase 2: comment core
+
+No UI yet. This phase is covered by unit tests (`npm test`). Nothing to check by hand.
