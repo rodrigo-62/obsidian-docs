@@ -1,0 +1,15 @@
+node_modules/
+.scratch/
+*.log
+.DS_Store
+# build output (copied into the test vault by `npm run dev` / `npm run build`)
+/main.js
+test-vault/.obsidian/plugins/folio/main.js
+test-vault/.obsidian/plugins/folio/styles.css
+test-vault/.obsidian/plugins/folio/manifest.json
+test-vault/.obsidian/plugins/folio/data.json
+test-vault/.obsidian/workspace.json
+test-vault/.obsidian/workspace-mobile.json
+.direnv/
+result
+dist/
