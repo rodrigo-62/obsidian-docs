@@ -41,7 +41,7 @@ Sources were cloned into `.scratch/` (gitignored, outside `src/`) on 2026-11-20 
 ## Storage format: keep §5.3, with three refinements
 
 1. **Line-start guard:** U+200B before a marker that starts a line's text (non-heading). It belongs to the marker (hidden with it, removed with it, stripped on copy and export).
-2. **Escaping `-->`:** the spec suggests `--\>`, but `\>` is an invalid JSON escape. Folio writes `-->`, a valid JSON escape for `>`, so plain `JSON.parse` decodes it with no custom unescape step. `--!>` (which also closes an HTML comment) is escaped the same way.
+2. **Escaping `-->`:** the spec suggests `--\>`, but `\>` is an invalid JSON escape. Folio writes `--\u003e` (`\u003e` is a valid JSON escape for `>`), so plain `JSON.parse` decodes it with no custom unescape step. `--!>` (which also closes an HTML comment) is escaped the same way.
 3. The anchor markers are byte-compatible with Document Comments' anchors (`<!--c:ID-->`). Its bodies (`<!--co:`) are not read.
 
 ## Verified Obsidian CSS variables (app.css from Obsidian 1.15.1, the installed build)

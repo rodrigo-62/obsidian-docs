@@ -22,7 +22,7 @@
 ## Storage format (summary; details in SPEC §5.3 and DECISIONS D0.2)
 
 - Anchors: `<!--c:ID-->text<!--/c:ID-->`, ID `[a-z0-9]+` (generated: 4 chars). If a marker starts a non-heading line's text, a U+200B guard goes before it.
-- Threads: a single `<!--folio:threads\n{pretty JSON}\n-->` block, always last in the file. `-->` is written as `-->`.
+- Threads: a single `<!--folio:threads\n{pretty JSON}\n-->` block, always last in the file. `-->` is written as `--\u003e`.
 - Comments form a tree (`parent`) and are displayed flat, with "↳ re:" chips.
 
 ## Current status / next step
