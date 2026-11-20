@@ -5,7 +5,7 @@
 ## Working rules
 
 - The user is mostly unavailable. Work autonomously: where the spec says "ask me", decide, then log the decision in `docs/DECISIONS.md`. Stop only if truly blocked, or if a step would touch files outside this repo.
-- **Never touch any vault or file outside this repo.** Test only in `test-vault/`. Its notes are generated from `scripts/vault-src/` by `npm run vault:reset`.
+- **Never touch any vault or file outside this repo.** In particular, never run `npm run update-vaults` or `install-plugin` (they write to the user's real vaults listed in `.install-targets`); only the user runs them. Test only in `test-vault/`. Its notes are generated from `scripts/vault-src/` by `npm run vault:reset`.
 - Phase order (the user's priority): 0, 2, 3, 4, 5, 6, then 1 last. Comments and copy-for-LLM matter most; page appearance matters least.
 - After each phase: `npm test` and `npm run build` must pass. Then update `docs/TESTING.md` and the status section below, and commit with a clear message.
 - `src/core/` is **pure TypeScript with no `obsidian` import**, unit-tested with vitest in `tests/`. Obsidian and CodeMirror glue goes in `src/obsidian/`.

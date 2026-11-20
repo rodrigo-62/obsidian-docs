@@ -135,8 +135,9 @@ class MarginPlugin implements PluginValue {
 	update(u: ViewUpdate): void {
 		const st = this.st();
 		const dataChanged = !!st && (st.version !== this.lastVersion || st.ui !== this.lastUI);
-		if (dataChanged || u.transactions.some((t) => t.effects.some((e) => e.is(relayout)))) this.sync(false);
-		if (dataChanged || u.geometryChanged || u.heightChanged || u.viewportChanged) this.schedule();
+		const relayoutAsked = u.transactions.some((t) => t.effects.some((e) => e.is(relayout)));
+		if (dataChanged || relayoutAsked) this.sync(false);
+		if (dataChanged || relayoutAsked || u.geometryChanged || u.heightChanged || u.viewportChanged) this.schedule();
 	}
 
 	/** Create/remove/update cards to match the state. */
@@ -164,6 +165,10 @@ class MarginPlugin implements PluginValue {
 			return;
 		}
 		this.layer.show();
+		// Comment text size applies at once (card heights then change, and the ResizeObserver re-lays out).
+		const size = ctx.commentFontSize();
+		if (size > 0) this.layer.style.setProperty('--folio-comment-size', `${size}px`);
+		else this.layer.style.removeProperty('--folio-comment-size');
 		if (!this.measured) this.wide = this.computeWide();
 		this.layer.toggleClass('is-hidden', !this.wide);
 		const md = this.view.state.doc;
@@ -330,14 +335,12 @@ class MarginPlugin implements PluginValue {
 				if (st?.ui.draft && !this.wide) this.ctx()?.changed(this.view);
 			}, 0);
 		}
-		const size = this.ctx()?.commentFontSize() ?? 0;
-		if (size > 0) this.layer.style.setProperty('--folio-comment-size', `${size}px`);
-		else this.layer.style.removeProperty('--folio-comment-size');
 		this.layer.style.left = `${Math.round(m.left)}px`;
 		this.layer.style.width = `${m.width}px`;
 		for (const [id, top] of m.tops) {
 			const el = id === DRAFT ? this.draftEl : id === DETACHED ? this.detachedEl : this.cards.get(id)?.el;
-			if (el) el.style.transform = `translateY(${Math.round(top)}px)`;
+			// `top`, not a transform: transformed layers render text slightly blurry
+			if (el) el.style.top = `${Math.round(top)}px`;
 		}
 	}
 

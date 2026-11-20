@@ -2,7 +2,7 @@
 # Run Obsidian headless (Xvfb) on a fresh COPY of test-vault/ (in .scratch/headless-vault,
 # so it never shares files with an Obsidian you have open), with an isolated profile in
 # .scratch/, remote-debuggable on port 9333. Never touches ~/.config/obsidian or other vaults.
-# The copy's plugin folder is a symlink to the real build output, so rebuilds are picked up.
+# The copy's plugin build files are symlinks to the real build output, so rebuilds are picked up.
 # Then: nix develop -c node scripts/cdp.mjs file-with-js.js [screenshot.png]
 # Stop: pkill -f obsidian-headless-profile
 set -euo pipefail
@@ -12,8 +12,11 @@ VAULT="$ROOT/.scratch/headless-vault"
 rm -rf "$VAULT"
 cp -r "$ROOT/test-vault" "$VAULT"
 rm -f "$VAULT/.obsidian/workspace.json"
-rm -rf "$VAULT/.obsidian/plugins/folio"
-ln -s "$ROOT/test-vault/.obsidian/plugins/folio" "$VAULT/.obsidian/plugins/folio"
+# Link only the build files (so rebuilds are picked up); settings (data.json) stay a private copy.
+for f in main.js styles.css manifest.json; do
+	rm -f "$VAULT/.obsidian/plugins/folio/$f"
+	ln -s "$ROOT/test-vault/.obsidian/plugins/folio/$f" "$VAULT/.obsidian/plugins/folio/$f"
+done
 mkdir -p "$PROFILE/obsidian"
 # Optional: OBSIDIAN_ASAR=/path/to/obsidian-1.x.y.asar runs that (newer) Obsidian version,
 # e.g. a copy of the auto-updated one, so behaviour matches your installed Obsidian.

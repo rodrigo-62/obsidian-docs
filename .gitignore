@@ -13,3 +13,4 @@ test-vault/.obsidian/workspace-mobile.json
 .direnv/
 result
 dist/
+.install-targets

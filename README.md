@@ -25,7 +25,9 @@ npm run build
 npm run install-plugin -- /path/to/vault     # e.g. /home/parrhasius/vault
 ```
 
-Then in Obsidian: Settings → Community plugins → enable **Folio**. To update later, repeat these steps and toggle Folio off and on (or restart Obsidian). Keep a backup or git history of the vault: Folio writes comments into notes.
+Then in Obsidian: Settings → Community plugins → enable **Folio**.
+
+**Automatic updates:** list your vaults in `.install-targets` (one path per line; it's gitignored) and run `npm run update-vaults`. It builds and installs into all of them. If the **Hot Reload** plugin is installed in a vault, Folio reloads there by itself (the script adds the `.hotreload` marker). Otherwise toggle Folio off and on. To update later, repeat these steps and toggle Folio off and on (or restart Obsidian). Keep a backup or git history of the vault: Folio writes comments into notes.
 
 ## Checking the real UI (dev)
 

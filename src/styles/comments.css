@@ -5,6 +5,7 @@ body {
 	--folio-hl-line: rgba(220, 160, 0, 0.95);
 	--folio-hl-draft: rgba(80, 140, 255, 0.25);
 	--folio-hl-resolved: rgba(128, 128, 128, 0.18);
+	--folio-active-outline: color-mix(in srgb, var(--folio-hl-line) 60%, transparent);
 }
 body.theme-dark {
 	--folio-hl-bg: rgba(255, 205, 60, 0.17);
@@ -12,6 +13,8 @@ body.theme-dark {
 	--folio-hl-line: rgba(255, 205, 60, 0.85);
 	--folio-hl-draft: rgba(100, 160, 255, 0.28);
 	--folio-hl-resolved: rgba(160, 160, 160, 0.16);
+	/* softer, more pastel outline for the active card on dark backgrounds */
+	--folio-active-outline: color-mix(in srgb, rgb(240, 215, 150) 38%, transparent);
 }
 
 /* Nested/overlapping marks stack their translucent backgrounds, so overlaps look darker. */

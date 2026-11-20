@@ -70,8 +70,18 @@
 	padding-bottom: calc((var(--line-height-normal, 1.5) - 1.2) * 0.5em);
 }
 
+/* Dropdown arrows: Obsidian picks the arrow image by the *app* theme (body.theme-dark),
+   so a light page in a dark app had white arrows. Follow the page theme instead. */
+.theme-dark .view-content.folio-theme-light .dropdown {
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23000' opacity='0.9' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' %3E%3Cpath d='m7 15 5 5 5-5'/%3E%3Cpath d='m7 9 5-5 5 5'/%3E%3C/svg%3E"), radial-gradient(ellipse, var(--dropdown-icon-background) 48%, transparent 50%);
+}
+.theme-light .view-content.folio-theme-dark .dropdown {
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23FFF' opacity='0.6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' %3E%3Cpath d='m7 15 5 5 5-5'/%3E%3Cpath d='m7 9 5-5 5 5'/%3E%3C/svg%3E"), radial-gradient(ellipse, var(--dropdown-icon-background) 48%, transparent 50%);
+}
+
 /* Highlight colours follow the page theme, not the app theme. */
 .view-content.folio-theme-light {
+	--folio-active-outline: color-mix(in srgb, var(--folio-hl-line) 60%, transparent);
 	--folio-hl-bg: rgba(255, 210, 0, 0.26);
 	--folio-hl-bg-strong: rgba(255, 186, 0, 0.55);
 	--folio-hl-line: rgba(220, 160, 0, 0.95);
@@ -80,6 +90,7 @@
 	color: var(--text-normal);
 }
 .view-content.folio-theme-dark {
+	--folio-active-outline: color-mix(in srgb, rgb(240, 215, 150) 38%, transparent);
 	--folio-hl-bg: rgba(255, 205, 60, 0.17);
 	--folio-hl-bg-strong: rgba(255, 200, 60, 0.42);
 	--folio-hl-line: rgba(255, 205, 60, 0.85);
