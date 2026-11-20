@@ -151,6 +151,8 @@ class MarginPlugin implements PluginValue {
 			return;
 		}
 		this.layer.show();
+		if (!this.measured) this.wide = this.computeWide();
+		this.layer.toggleClass('is-hidden', !this.wide);
 		const md = this.view.state.doc;
 		const wanted = new Set([...anchored, ...detached]);
 		for (const [id, card] of this.cards) {
@@ -200,7 +202,10 @@ class MarginPlugin implements PluginValue {
 
 	private syncDraft(st: FolioState): void {
 		const d = st.ui.draft;
-		if (d && !this.draftEl) this.wide = this.computeWide();
+		if (d && !this.draftEl) {
+			this.wide = this.computeWide();
+			this.layer.toggleClass('is-hidden', !this.wide);
+		}
 		if (!d || !this.wide) {
 			this.removeDraft();
 			return;
@@ -291,8 +296,12 @@ class MarginPlugin implements PluginValue {
 		return { tops, left, width, wide };
 	}
 
+	private measured = false;
+
 	private apply(m: Measured | null): void {
 		if (!m || this.destroyed) return;
+		this.measured = true;
+		this.layer.toggleClass('is-hidden', !m.wide);
 		if (m.wide !== this.wide) {
 			this.wide = m.wide;
 			this.layer.toggleClass('is-hidden', !this.wide);
