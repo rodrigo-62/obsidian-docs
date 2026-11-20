@@ -102,7 +102,7 @@ Open `test-vault/` in Obsidian (*Open folder as vault*). `npm run install-plugin
 
 Design notes: `docs/SPEC.md` (original spec), `docs/DECISIONS.md` (decisions and changes), `docs/TESTING.md` (manual checks), `docs/RESEARCH.md` (prior art).
 
-**Releasing:** bump `version` in `manifest.json` and `package.json` (`npm version patch|minor|major` does both and updates `versions.json`), then push a tag with exactly that version (`git push --follow-tags`). The *Release* workflow builds and attaches `main.js`, `manifest.json` and `styles.css` to a draft release; publish it on GitHub.
+**Releasing:** bump `version` in `manifest.json` and `package.json` (`npm version patch|minor|major` does both and updates `versions.json`), then push a tag with exactly that version (`git push --follow-tags`). The *Release* workflow tests, builds and publishes a release with `main.js`, `manifest.json` and `styles.css` (the files Obsidian installs).
 
 ## License
 

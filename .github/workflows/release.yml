@@ -1,7 +1,8 @@
 name: Release
 
-# Push a tag equal to the version in manifest.json (e.g. 0.1.0, no "v") to build
-# the plugin and attach main.js, manifest.json and styles.css to a draft release.
+# Push a tag equal to the version in manifest.json (e.g. 1.0.0, no "v") to build the
+# plugin and publish a release with main.js, manifest.json and styles.css. It is published
+# directly (not a draft): Obsidian's directory only sees published releases.
 on:
   push:
     tags:
@@ -36,10 +37,10 @@ jobs:
           subject-path: |
             dist/main.js
             dist/styles.css
-      - name: Create draft release
+      - name: Publish release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           tag="${GITHUB_REF#refs/tags/}"
           cp dist/main.js dist/styles.css .
-          gh release create "$tag" --title="$tag" --draft --generate-notes main.js manifest.json styles.css
+          gh release create "$tag" --title="$tag" --generate-notes main.js manifest.json styles.css
