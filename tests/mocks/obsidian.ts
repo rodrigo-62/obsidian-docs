@@ -227,6 +227,35 @@ export class ItemView {
 		await (this as unknown as { onOpen: () => Promise<void> }).onOpen();
 	}
 }
+export class SearchComponent {
+	containerEl: HTMLElement;
+	inputEl: HTMLInputElement;
+	private cb: ((v: string) => unknown) | null = null;
+	constructor(parent: HTMLElement) {
+		this.containerEl = document.createElement('div');
+		this.containerEl.className = 'search-input-container';
+		this.inputEl = document.createElement('input');
+		this.inputEl.type = 'search';
+		this.containerEl.appendChild(this.inputEl);
+		parent.appendChild(this.containerEl);
+		this.inputEl.addEventListener('input', () => this.cb?.(this.inputEl.value));
+	}
+	setPlaceholder(p: string): this {
+		this.inputEl.placeholder = p;
+		return this;
+	}
+	setValue(v: string): this {
+		this.inputEl.value = v;
+		return this;
+	}
+	getValue(): string {
+		return this.inputEl.value;
+	}
+	onChange(cb: (v: string) => unknown): this {
+		this.cb = cb;
+		return this;
+	}
+}
 export class Plugin {}
 export class PluginSettingTab {}
 export class TFile {}

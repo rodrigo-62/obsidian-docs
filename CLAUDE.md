@@ -44,4 +44,6 @@ You can't see the user's Obsidian, but you can run your own: `scripts/obsidian-h
 - **Feedback round 4 done** (DECISIONS F4): instant comment size, crisper cards (top instead of transform), page-themed dropdown arrows, smaller active shift, pastel dark outline, `npm run update-vaults`.
 - **Rename done** (DECISIONS F5): Folio → Docs (`docs`), with legacy reading, an upgrade command, and install-script migration. 202 tests.
 - **Publishing prep done** (DECISIONS F6): lint clean (1 deferred warning), no default hotkeys, README with screenshots (`docs/images/`), CI and release workflows. Submission to Obsidian is the user's step: release on GitHub, then submit at community.obsidian.md (not a PR; see DECISIONS F6.11).
+- **Released 1.0.0** (GitHub release published; submitted at community.obsidian.md).
+- **Search scopes done** (DECISIONS F8): Ctrl+F skips comment data (`searchScope.ts` wraps Obsidian's internal `editor.searchCursor`, fail-safe), Replace can't touch markers or the thread block (`searchReplaceFilter`), comment search in the sidebar plus *Search comments* command. 219 tests.
 - **Next:** wait for the user's feedback. To check UI against the user's Obsidian version, run the headless script with `OBSIDIAN_ASAR=.scratch/obsidian-1.15.1.asar` (a copy; re-copy from `~/.config/obsidian/obsidian-<ver>.asar` if the user updates).

@@ -162,3 +162,11 @@ Make the Obsidian window wide (≥ 1100 px editor pane). Open *Essays/Sample ess
 - [ ] Hotkeys: in your vaults, Ctrl+Alt+M / C / F / . / , / ↓ / ↑ still work after `npm run update-vaults` (the script adds them where you had none). In the test vault they come from `.obsidian/hotkeys.json`.
 - [ ] A comment whose text starts with a `---` line shows all its text, with a separator line at the top.
 - [ ] Tree view: the first comment has no ▾ and no empty line above its text.
+
+## Search scopes (F8)
+
+- [ ] Sample essay, Ctrl+F, search **keeper**: the count is 5, and every step (Enter / arrows) highlights a visible word. Search **Agreed** (only in a comment) or **resolved**: no match.
+- [ ] Ctrl+F → replace **false** with **true**, Replace All: resolved threads stay resolved (comments unchanged). Replace a word that is in both the text and comments: only the text changes.
+- [ ] Comments sidebar: type **ship** in *Search comments*. Only "Light and Distance" is listed, with "ship" highlighted. Enter / Shift+Enter step through the matching threads and select their text; Esc clears.
+- [ ] Search **Find** with *Show resolved* off: "No comments match" plus "1 more in resolved threads"; clicking that shows it.
+- [ ] Select a word in the note, run **Docs: Search comments**: the sidebar opens with that word searched.

@@ -9,12 +9,14 @@ import { ComposerModal } from './composer';
 import { marginContext, marginExtensions, marginIsWide, marginPlugin, refreshMargin, type MarginContext } from './margin/marginView';
 import { CommentsSidebarView, SIDEBAR_VIEW } from './sidebarView';
 import { clearReadingCache, makeReadingPostProcessor } from './reading';
+import { installSearchScope } from './searchScope';
 import { KEYS, LEGACY_KEYS, hasLegacyKeys, migrateFrontmatter, readDocSettings, stepFontSize, stepZoom, toFrontmatter, type DocSettings, type PageSettings } from '../core/docSettings';
 import { applyPageStyle, clearAllPageStyles } from './pageStyle';
 import { DocToolbar, THEME_ORDER } from './toolbar';
 import { clampTweak } from '../core/paperPalette';
 import { footnoteAction } from '../core/footnotes';
 import { BLOCK_OPEN, LEGACY_BLOCK_OPENS, findThreadBlock } from '../core/threadStore';
+import { stripMarkers } from '../core/markers';
 import { adjacentHeading } from '../core/headings';
 
 export default class FolioPlugin extends Plugin {
@@ -37,6 +39,7 @@ export default class FolioPlugin extends Plugin {
 		this.addSettingTab(new FolioSettingTab(this.app, this));
 		this.registerView(SIDEBAR_VIEW, (leaf) => new CommentsSidebarView(leaf, this));
 		this.registerEditorExtension(commentExtensions([marginContext.of(this.marginContext()), ...marginExtensions]));
+		installSearchScope(this);
 		this.registerExportCommands();
 		this.registerCommentCommands();
 		this.registerNavigationCommands();
@@ -111,8 +114,9 @@ export default class FolioPlugin extends Plugin {
 			setTree: (path, id, tree) => this.setTree(path, id, tree),
 			openSidebar: () => void this.activateSidebar(),
 			changed: (view) => {
+				// Compare with the note the sidebar shows (lastMarkdown can be unset, e.g. after a reload while the sidebar had focus).
 				const sb = this.sidebar();
-				if (sb && editorViewOf(this.lastMarkdown) === view) sb.refresh();
+				if (sb?.shows(view)) sb.refresh();
 			},
 		};
 	}
@@ -149,6 +153,14 @@ export default class FolioPlugin extends Plugin {
 		await (leaf as unknown as { loadIfDeferred?: () => Promise<void> }).loadIfDeferred?.();
 		const view = leaf.view;
 		if (view instanceof CommentsSidebarView) view.setSource(source);
+	}
+
+	/** Open the Comments sidebar with its search focused, starting from the editor's selection if it is a short one-line text. */
+	async searchComments(): Promise<void> {
+		const sel = stripMarkers(this.lastMarkdownView()?.editor?.getSelection() ?? '');
+		const text = sel && sel.length <= 200 && !sel.includes('\n') ? sel : undefined;
+		await this.activateSidebar();
+		this.sidebar()?.focusSearch(text);
 	}
 
 	/** Ask every margin to re-render (e.g. after a tree toggle from the sidebar). */
@@ -595,6 +607,11 @@ export default class FolioPlugin extends Plugin {
 			id: 'open-comments-sidebar',
 			name: 'Open comments sidebar',
 			callback: () => void this.activateSidebar(),
+		});
+		this.addCommand({
+			id: 'search-comments',
+			name: 'Search comments',
+			callback: () => void this.searchComments(),
 		});
 		this.addCommand({
 			id: 'toggle-show-resolved',

@@ -10,6 +10,7 @@ import { ChangeSet, EditorSelection, EditorState, Transaction, type ChangeSpec, 
 import { EditorView } from '@codemirror/view';
 import { adjustDeletions, adjustInsertionPos, sanitizePastedMarkers, stripMarkers } from '../../core/markers';
 import type { Range } from '../../core/mdScan';
+import { hiddenRanges, touchesHidden } from '../../core/search';
 import { folioField, folioInternal } from './state';
 
 interface RawChange {
@@ -126,6 +127,29 @@ export const editFilter = EditorState.transactionFilter.of((tr): Transaction | r
 			userEvent,
 		},
 	];
+});
+
+/**
+ * Find & replace never changes comment markers or the hidden thread block
+ * (DECISIONS F8.1). Obsidian's find bar tags its edits "searchReplace", which
+ * editFilter doesn't handle, so before this a Replace All could rewrite the
+ * threads JSON (e.g. "true" → "false" flipped every thread's resolved state).
+ * Changes that touch a hidden range are dropped; the rest go through.
+ */
+export const searchReplaceFilter = EditorState.transactionFilter.of((tr): Transaction | TransactionSpec => {
+	if (!tr.docChanged || !tr.isUserEvent('searchReplace') || tr.annotation(folioInternal)) return tr;
+	const st = tr.startState.field(folioField, false);
+	if (!st) return tr;
+	const hidden = hiddenRanges(st.doc.markers.markers, st.hidden);
+	if (!hidden.length) return tr;
+	const kept: ChangeSpec[] = [];
+	let dropped = false;
+	tr.changes.iterChanges((from, to, _fromB, _toB, inserted) => {
+		if (touchesHidden(hidden, from, to)) dropped = true;
+		else kept.push({ from, to, insert: inserted.toString() });
+	});
+	if (!dropped) return tr;
+	return { changes: kept, scrollIntoView: tr.scrollIntoView, userEvent: tr.annotation(Transaction.userEvent) };
 });
 
 /** Copy/cut without markers or the thread block. */

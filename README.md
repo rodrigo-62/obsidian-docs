@@ -13,6 +13,7 @@ A "Google Docs mode" for [Obsidian](https://obsidian.md): **margin comments** wi
 - Comment bodies are Markdown; `---` on its own line becomes a separator.
 - If the commented text is deleted, the thread is kept under "Detached comments".
 - Narrow pane? Comments move to a **Comments sidebar**. Reading view highlights commented text too.
+- **Search comments** in the sidebar (or with *Docs: Search comments*): it lists the threads whose comments contain a word and steps through them with Enter. The editor's own find (Ctrl+F) searches only the note's text, never the stored comments, and Replace never changes them.
 - Double-click or right-click a comment for a menu (reply, edit, copy, go to text, resolve, delete).
 
 **Page view** (per note, turned on with *Docs: Toggle doc mode*, or created with *Docs: Create new doc*)

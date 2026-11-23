@@ -331,16 +331,43 @@
 .folio-sidebar {
 	padding: 0 !important;
 }
+.folio-sidebar-top {
+	position: sticky;
+	top: 0;
+	/* above cards (an active card is raised to z-index 5) */
+	z-index: 10;
+	background: var(--background-secondary);
+	border-bottom: 1px solid var(--background-modifier-border);
+}
 .folio-sidebar-header {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 8px 10px;
-	border-bottom: 1px solid var(--background-modifier-border);
-	position: sticky;
-	top: 0;
-	background: var(--background-secondary);
-	z-index: 1;
+	padding: 8px 10px 4px;
+}
+.folio-sidebar-search {
+	padding: 0 10px 8px;
+}
+.folio-sidebar-search .search-input-container {
+	width: 100%;
+	margin: 0;
+}
+.folio-sidebar-search-status {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0 8px;
+	margin-top: 4px;
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}
+.folio-sidebar-search-more {
+	color: var(--text-accent);
+}
+/* Comment search matches (CSS Custom Highlight API, set by the sidebar). */
+::highlight(folio-comment-search) {
+	/* --text-highlight-bg in older Obsidian, --highlight-background in 1.9+ */
+	background-color: var(--text-highlight-bg, var(--highlight-background, rgba(255, 208, 0, 0.4)));
+	color: var(--text-normal);
 }
 .folio-sidebar-title {
 	font-weight: var(--font-semibold);

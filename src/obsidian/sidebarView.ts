@@ -1,10 +1,13 @@
 // Right-sidebar list of comment threads (SPEC §5.2 narrow-pane fallback).
 // Lists the threads of the most recently active note in document order and
 // highlights the active one. Works with any pane width.
+// It also holds the comment search (DECISIONS F8.3): a filter over comment
+// bodies, with matches highlighted and Enter / Shift+Enter to step through them.
 
-import { ItemView, MarkdownView, setIcon, type WorkspaceLeaf } from 'obsidian';
+import { ItemView, MarkdownView, SearchComponent, setIcon, type WorkspaceLeaf } from 'obsidian';
 import type { EditorView } from '@codemirror/view';
 import { stripMarkers } from '../core/markers';
+import { findOccurrences, matchingComments } from '../core/search';
 import { folioField, setHover } from './cm/state';
 import { ops, revealThread } from './commentOps';
 import { ThreadCard, type CardHost } from './margin/card';
@@ -12,6 +15,34 @@ import { editorViewOf } from './cm';
 import type FolioPlugin from './main';
 
 export const SIDEBAR_VIEW = 'folio-comments';
+/** Name in the CSS Custom Highlight registry (styled with ::highlight() in margin.css). */
+const SEARCH_HIGHLIGHT = 'folio-comment-search';
+
+/** DOM ranges of each occurrence of `query` in the text of `root` (an occurrence may span several text nodes). */
+export function textRanges(root: HTMLElement, query: string): Range[] {
+	const doc = root.ownerDocument;
+	const walker = doc.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+	const nodes: Text[] = [];
+	const starts: number[] = [];
+	let full = '';
+	for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+		nodes.push(n as Text);
+		starts.push(full.length);
+		full += (n as Text).data;
+	}
+	const at = (pos: number, end: boolean): [Text, number] => {
+		// The node holding `pos` (for an end position: the node whose text ends at or after it).
+		let i = nodes.length - 1;
+		while (i > 0 && (end ? starts[i]! >= pos : starts[i]! > pos)) i--;
+		return [nodes[i]!, pos - starts[i]!];
+	};
+	return findOccurrences(full, query).map(([s, e]) => {
+		const r = doc.createRange();
+		r.setStart(...at(s, false));
+		r.setEnd(...at(e, true));
+		return r;
+	});
+}
 
 // NB: field names avoid ItemView's own (headerEl, titleEl, …): shadowing them breaks Obsidian's view loading.
 export class CommentsSidebarView extends ItemView {
@@ -22,6 +53,13 @@ export class CommentsSidebarView extends ItemView {
 	private sbDetachedHeader!: HTMLElement;
 	private host: CardHost;
 	private source: MarkdownView | null = null;
+	private sbTopEl!: HTMLElement;
+	private sbSearch: SearchComponent | null = null;
+	private sbSearchStatus!: HTMLElement;
+	private query = '';
+	/** Matching threads in display order (for Enter / Shift+Enter). */
+	private matchOrder: string[] = [];
+	private highlightFrame = 0;
 
 	constructor(leaf: WorkspaceLeaf, private plugin: FolioPlugin) {
 		super(leaf);
@@ -52,7 +90,8 @@ export class CommentsSidebarView extends ItemView {
 				this.refresh();
 				plugin.refreshMargins();
 			},
-			changed: () => undefined,
+			// A comment body finished rendering: its text may need highlighting.
+			changed: () => this.scheduleHighlight(),
 		};
 	}
 
@@ -69,7 +108,10 @@ export class CommentsSidebarView extends ItemView {
 	async onOpen(): Promise<void> {
 		this.contentEl.empty();
 		this.contentEl.addClass('folio-sidebar');
-		this.sbHeaderEl = this.contentEl.createDiv({ cls: 'folio-sidebar-header' });
+		// Header and search stay at the top while the list scrolls.
+		const top = (this.sbTopEl = this.contentEl.createDiv({ cls: 'folio-sidebar-top' }));
+		this.sbHeaderEl = top.createDiv({ cls: 'folio-sidebar-header' });
+		this.renderSearch(top.createDiv({ cls: 'folio-sidebar-search' }));
 		this.sbEmptyEl = this.contentEl.createDiv({ cls: 'folio-sidebar-empty' });
 		this.sbListEl = this.contentEl.createDiv({ cls: 'folio-sidebar-list' });
 		this.sbDetachedHeader = createDiv({ cls: 'folio-detached-header', text: 'Detached comments' });
@@ -85,10 +127,101 @@ export class CommentsSidebarView extends ItemView {
 	async onClose(): Promise<void> {
 		for (const c of this.cards.values()) c.destroy();
 		this.cards.clear();
+		if (this.highlightFrame) window.cancelAnimationFrame(this.highlightFrame);
+		this.highlightFrame = 0;
+		this.highlightRegistry()?.delete(SEARCH_HIGHLIGHT);
+	}
+
+	private renderSearch(row: HTMLElement): void {
+		const search = new SearchComponent(row).setPlaceholder('Search comments');
+		search.onChange((v) => this.setQuery(v));
+		search.inputEl.addEventListener('keydown', (e) => {
+			if (e.key === 'Enter' && !e.isComposing) {
+				e.preventDefault();
+				this.stepMatch(e.shiftKey ? -1 : 1);
+			} else if (e.key === 'Escape' && this.query) {
+				e.preventDefault();
+				e.stopPropagation();
+				search.setValue('');
+				this.setQuery('');
+			}
+		});
+		this.sbSearch = search;
+		this.sbSearchStatus = row.createDiv({ cls: 'folio-sidebar-search-status' });
+		this.sbSearchStatus.hide();
+	}
+
+	private setQuery(q: string): void {
+		if (q === this.query) return;
+		this.query = q;
+		this.refresh();
+	}
+
+	/** Focus the comment search, optionally starting with `text` (e.g. the editor selection). */
+	focusSearch(text?: string): void {
+		const search = this.sbSearch;
+		if (!search) return;
+		if (text !== undefined && text !== this.query) {
+			search.setValue(text);
+			this.setQuery(text);
+		}
+		search.inputEl.focus();
+		search.inputEl.select();
+	}
+
+	/** Make the next (or previous) matching thread active and show its text. Focus stays in the search box. */
+	private stepMatch(dir: 1 | -1): void {
+		const ids = this.matchOrder;
+		if (!ids.length) return;
+		const activeId = this.cm()?.state.field(folioField, false)?.ui.activeId ?? null;
+		const i = activeId ? ids.indexOf(activeId) : -1;
+		const next = i < 0 ? ids[dir > 0 ? 0 : ids.length - 1]! : ids[(i + dir + ids.length) % ids.length]!;
+		this.host.activate(next);
+		this.scrollIntoView(next);
+	}
+
+	/** Scroll a card into view, clear of the sticky header and search box. */
+	private scrollIntoView(id: string | null): void {
+		const card = id ? this.cards.get(id) : undefined;
+		if (!card) return;
+		this.contentEl.style.setProperty('scroll-padding-top', `${this.sbTopEl.offsetHeight + 8}px`);
+		card.el.scrollIntoView({ block: 'nearest' });
+	}
+
+	private highlightRegistry(): Map<string, unknown> | null {
+		const win = this.contentEl.ownerDocument.defaultView as unknown as { CSS?: { highlights?: Map<string, unknown> } } | null;
+		return win?.CSS?.highlights ?? null;
+	}
+
+	private scheduleHighlight(): void {
+		if (this.highlightFrame) return;
+		this.highlightFrame = window.requestAnimationFrame(() => {
+			this.highlightFrame = 0;
+			this.applyHighlight();
+		});
+	}
+
+	/** Highlight the query in the rendered comment bodies (CSS Custom Highlight API: no DOM changes). */
+	private applyHighlight(): void {
+		const registry = this.highlightRegistry();
+		const win = this.contentEl.ownerDocument.defaultView as unknown as { Highlight?: new (...ranges: Range[]) => unknown } | null;
+		if (!registry || !win?.Highlight) return;
+		if (!this.query) {
+			registry.delete(SEARCH_HIGHLIGHT);
+			return;
+		}
+		const ranges: Range[] = [];
+		this.sbListEl.querySelectorAll<HTMLElement>('.folio-comment-body').forEach((body) => ranges.push(...textRanges(body, this.query)));
+		registry.set(SEARCH_HIGHLIGHT, new win.Highlight(...ranges));
 	}
 
 	private cm(): EditorView | null {
 		return editorViewOf(this.source);
+	}
+
+	/** Is this the editor whose comments the sidebar lists? */
+	shows(view: EditorView): boolean {
+		return this.cm() === view;
 	}
 
 	setSource(view: MarkdownView | null): void {
@@ -134,6 +267,8 @@ export class CommentsSidebarView extends ItemView {
 		const st = cm?.state.field(folioField, false);
 		this.renderHeader();
 		if (!cm || !st) {
+			this.matchOrder = [];
+			this.sbSearchStatus.hide();
 			this.sbEmptyEl.setText(this.source ? 'Comments are shown for notes in Live Preview or Source mode.' : 'Open a note to see its comments.');
 			this.sbEmptyEl.show();
 			this.sbListEl.empty();
@@ -148,10 +283,23 @@ export class CommentsSidebarView extends ItemView {
 		}
 		const showResolved = st.ui.showResolved;
 		const vis = (id: string) => !st.doc.threads[id]!.resolved || showResolved;
-		const anchored = st.doc.anchored.filter(vis);
-		const detached = st.doc.detached.filter(vis);
-		this.sbEmptyEl.toggle(anchored.length + detached.length === 0);
-		this.sbEmptyEl.setText('No comments in this note. Select text and press Ctrl+Alt+M to add one.');
+		let anchored = st.doc.anchored.filter(vis);
+		let detached = st.doc.detached.filter(vis);
+		const q = this.query;
+		if (q) {
+			const matches = (id: string) => matchingComments(st.doc.threads[id]!, q).length > 0;
+			const resolvedHidden = showResolved ? 0 : [...st.doc.anchored, ...st.doc.detached].filter((id) => st.doc.threads[id]!.resolved && matches(id)).length;
+			anchored = anchored.filter(matches);
+			detached = detached.filter(matches);
+			this.matchOrder = [...anchored, ...detached];
+			this.renderSearchStatus(this.matchOrder.length, resolvedHidden);
+			this.sbEmptyEl.hide();
+		} else {
+			this.matchOrder = [];
+			this.sbSearchStatus.hide();
+			this.sbEmptyEl.toggle(anchored.length + detached.length === 0);
+			this.sbEmptyEl.setText('No comments in this note. Select text and run "Docs: Add comment".');
+		}
 		const wanted = new Set([...anchored, ...detached]);
 		for (const [id, c] of this.cards) {
 			if (!wanted.has(id)) {
@@ -189,8 +337,22 @@ export class CommentsSidebarView extends ItemView {
 			this.sbListEl.replaceChildren(...order);
 			if (focused?.instanceOf(HTMLElement) && this.sbListEl.contains(focused)) focused.focus();
 		}
-		const active = st.ui.activeId ? this.cards.get(st.ui.activeId) : undefined;
-		if (active) active.el.scrollIntoView({ block: 'nearest' });
+		this.scrollIntoView(st.ui.activeId);
+		this.scheduleHighlight();
+	}
+
+	private renderSearchStatus(count: number, resolvedHidden: number): void {
+		const el = this.sbSearchStatus;
+		el.empty();
+		el.show();
+		el.createSpan({ text: count ? `${count} thread${count === 1 ? '' : 's'}` : 'No comments match' });
+		if (resolvedHidden) {
+			const more = el.createEl('a', { cls: 'folio-sidebar-search-more', text: `${resolvedHidden} more in resolved threads`, href: '#' });
+			more.addEventListener('click', (e) => {
+				e.preventDefault();
+				void this.plugin.toggleShowResolved();
+			});
+		}
 	}
 
 	private sbTitleEl: HTMLElement | null = null;
