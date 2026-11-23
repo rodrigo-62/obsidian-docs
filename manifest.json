@@ -1,7 +1,7 @@
 {
 	"id": "docs",
 	"name": "Docs",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"minAppVersion": "1.8.0",
 	"description": "Comment in the margin like in Google Docs, with threaded replies; give notes a page view with their own theme; copy a note with its comments for an AI agent.",
 	"author": "Rodrigo Monteiro",
