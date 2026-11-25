@@ -105,6 +105,27 @@ export function deleteComment(thread: Thread, commentId: string): Thread | null 
 	};
 }
 
+// --- Priority (DECISIONS F9.3) ---------------------------------------------
+// A thread may carry "priority": "low" | "high" | "critical". Normal is the
+// default and is never stored, so notes from before priorities existed, and
+// threads nobody rated, stay byte-for-byte unchanged.
+
+export const PRIORITIES = ['low', 'normal', 'high', 'critical'] as const;
+export type Priority = (typeof PRIORITIES)[number];
+export const PRIORITY_LABELS: Record<Priority, string> = { low: 'Low', normal: 'Normal', high: 'High', critical: 'Critical' };
+
+/** A thread's priority. Missing or unrecognised values count as normal. */
+export function threadPriority(thread: Thread): Priority {
+	const p = thread.priority;
+	return p === 'low' || p === 'high' || p === 'critical' ? p : 'normal';
+}
+
+/** Set a thread's priority (normal removes the field). Keeps "priority" before "comments" in the JSON. */
+export function setPriority(thread: Thread, priority: Priority): Thread {
+	const { comments, priority: _old, ...rest } = thread;
+	return priority === 'normal' ? { ...rest, comments } : { ...rest, priority, comments };
+}
+
 export function setResolved(thread: Thread, resolved: boolean, now: string = nowIso()): Thread {
 	const next: Thread = { ...thread, resolved };
 	if (resolved) next.resolvedAt = now;

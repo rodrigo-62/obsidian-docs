@@ -216,4 +216,63 @@ describe('composer keymap scope', () => {
 		comp.textarea.dispatchEvent(new Event('blur'));
 		expect(pushed.length).toBe(0);
 	});
+	it('formats the comment (not the note) with Mod+B and Mod+K, and lets other keys through', async () => {
+		const { createComposer } = await import('../src/obsidian/composer');
+		const pushed: unknown[] = [];
+		const app = { scope: {}, keymap: { pushScope: (s: unknown) => pushed.push(s), popScope: () => undefined } };
+		const parent = document.createElement('div');
+		document.body.appendChild(parent);
+		const comp = createComposer(parent, { app: app as never, onSubmit: () => undefined, onCancel: () => undefined });
+		comp.textarea.dispatchEvent(new Event('focus'));
+		const scope = pushed[0] as { parent?: unknown; keys: { mods: string[]; key: string; fn: () => unknown }[] };
+		expect(scope.parent).toBeUndefined(); // no app scope behind it: Obsidian's hotkeys don't reach the note
+		const key = (k: string) => scope.keys.find((x) => x.key === k && x.mods.length === 1 && x.mods[0] === 'Mod')!;
+		comp.textarea.value = 'make this bold';
+		comp.textarea.setSelectionRange(10, 14);
+		expect(key('B').fn()).toBe(false);
+		expect(comp.textarea.value).toBe('make this **bold**');
+		key('B').fn();
+		expect(comp.textarea.value).toBe('make this bold');
+		comp.textarea.setSelectionRange(5, 9);
+		key('K').fn();
+		expect(comp.textarea.value).toBe('make [this]() bold');
+		expect(scope.keys.some((k) => k.key === 'Z')).toBe(false); // undo, select all, … stay native
+	});
+
+	it('offers a priority picker for new comments and submits the choice', async () => {
+		const { createComposer } = await import('../src/obsidian/composer');
+		const { Menu } = await import('./mocks/obsidian');
+		const parent = document.createElement('div');
+		document.body.appendChild(parent);
+		let got: unknown = null;
+		const comp = createComposer(parent, { priority: 'normal', onSubmit: (t, extra) => (got = { t, ...extra }), onCancel: () => undefined });
+		const chip = parent.querySelector<HTMLElement>('.folio-priority-chip')!;
+		expect(chip.textContent).toBe('Normal');
+		chip.dispatchEvent(new MouseEvent('click'));
+		const items = Menu.last!.items;
+		expect(items.map((i) => i.title)).toEqual(['Low', 'Normal', 'High', 'Critical']);
+		expect(items.find((i) => i.checked)!.title).toBe('Normal');
+		items.find((i) => i.title === 'High')!.cb();
+		expect(chip.textContent).toBe('High');
+		comp.textarea.value = 'Important';
+		parent.querySelector<HTMLButtonElement>('.mod-cta')!.click();
+		expect(got).toEqual({ t: 'Important', priority: 'high' });
+		const reply = createComposer(parent, { onSubmit: () => undefined, onCancel: () => undefined });
+		expect(reply.el.querySelector('.folio-priority-chip')).toBeNull(); // replies have none
+	});
+});
+
+describe('menus', () => {
+	it('closes the previous menu when another opens', async () => {
+		const { showMenu, isMenuOpen } = await import('../src/obsidian/menus');
+		const { Menu } = await import('./mocks/obsidian');
+		const a = new Menu();
+		const b = new Menu();
+		showMenu(a as never, new MouseEvent('contextmenu'));
+		showMenu(b as never, new MouseEvent('contextmenu'));
+		expect(a.shown).toBe(false);
+		expect(b.shown).toBe(true);
+		b.hide();
+		expect(isMenuOpen()).toBe(false);
+	});
 });

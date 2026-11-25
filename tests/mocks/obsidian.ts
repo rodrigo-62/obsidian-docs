@@ -114,24 +114,42 @@ export class Notice {
 }
 
 export class Menu {
-	items: { title: string; cb: () => void }[] = [];
+	items: { title: string; cb: () => void; checked: boolean | null }[] = [];
+	shown = false;
+	private hideCbs: (() => void)[] = [];
 	addItem(fn: (i: MenuItem) => void): this {
 		const item = new MenuItem();
 		fn(item);
-		this.items.push({ title: item.title, cb: item.cb });
+		this.items.push({ title: item.title, cb: item.cb, checked: item.checked });
 		return this;
 	}
 	addSeparator(): this {
 		return this;
 	}
 	showAtMouseEvent(): void {
+		this.shown = true;
 		Menu.last = this;
+	}
+	onHide(cb: () => void): void {
+		this.hideCbs.push(cb);
+	}
+	hide(): this {
+		if (this.shown) {
+			this.shown = false;
+			this.hideCbs.forEach((cb) => cb());
+		}
+		return this;
 	}
 	static last: Menu | null = null;
 }
 
 class MenuItem {
 	title = '';
+	checked: boolean | null = null;
+	setChecked(c: boolean | null): this {
+		this.checked = c;
+		return this;
+	}
 	cb: () => void = () => undefined;
 	setTitle(t: string): this {
 		this.title = t;

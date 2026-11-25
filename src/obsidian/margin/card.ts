@@ -2,8 +2,9 @@
 // Plain DOM via Obsidian's createEl helpers. Comment bodies are Markdown.
 
 import { App, Component, MarkdownRenderer, Menu, Modal, Notice, setIcon, Setting } from 'obsidian';
-import { excerpt, flatView, prepareCommentMarkdown, rootComment, treeRows, type Comment, type ParentChip, type Thread } from '../../core/model';
+import { excerpt, flatView, prepareCommentMarkdown, PRIORITIES, PRIORITY_LABELS, rootComment, threadPriority, treeRows, type Comment, type ParentChip, type Priority, type Thread } from '../../core/model';
 import { createComposer, type Composer } from '../composer';
+import { showMenu } from '../menus';
 
 export interface CardHost {
 	app: App;
@@ -14,6 +15,7 @@ export interface CardHost {
 	deleteComment(id: string, commentId: string): boolean;
 	deleteThread(id: string): boolean;
 	resolve(id: string, resolved: boolean): boolean;
+	setPriority(id: string, priority: Priority): boolean;
 	/** Select/scroll to the thread's text and make it active. */
 	activate(id: string): void;
 	/** Scroll the editor so the thread's text is in the middle of the view, and select it. */
@@ -145,6 +147,8 @@ export class ThreadCard {
 		this.el.toggleClass('is-active', state.active);
 		this.el.toggleClass('is-resolved', thread.resolved);
 		this.el.toggleClass('is-detached', state.detached);
+		const priority = threadPriority(thread);
+		for (const p of PRIORITIES) this.el.toggleClass(`folio-priority-${p}`, p === priority);
 		this.el.toggleClass('is-tree', tree);
 		if (threadChanged && this.replyTarget && !thread.comments.some((c) => c.id === this.replyTarget)) this.replyTarget = null;
 		this.renderHeader(thread);
@@ -165,6 +169,8 @@ export class ThreadCard {
 		h.empty();
 		const root = rootComment(thread);
 		const meta = h.createDiv({ cls: 'folio-card-meta' });
+		const priority = threadPriority(thread);
+		if (priority !== 'normal') meta.createSpan({ cls: `folio-badge folio-priority-badge is-${priority}`, text: PRIORITY_LABELS[priority], attr: { 'aria-label': `${PRIORITY_LABELS[priority]} priority` } });
 		if (thread.resolved) meta.createSpan({ cls: 'folio-badge', text: 'Resolved' });
 		if (this.state?.detached) meta.createSpan({ cls: 'folio-badge folio-badge-detached', text: 'Detached', attr: { 'aria-label': 'The commented text was deleted' } });
 		if (root) meta.createSpan({ cls: 'folio-date', text: shortDate(root.created), attr: { 'aria-label': fullDate(root.created) } });
@@ -196,6 +202,8 @@ export class ThreadCard {
 			if (root) menu.addItem((i) => i.setTitle('Edit comment').setIcon('pencil').onClick(() => this.startEdit(root.id)));
 			if (root && !thread.resolved && thread.comments.length > 1) menu.addItem((i) => i.setTitle('Reply to the first comment').setIcon('reply').onClick(() => this.setReplyTarget(root.id)));
 			menu.addItem((i) => i.setTitle(this.tree ? 'Show in time order' : 'Show as tree').setIcon('git-branch').onClick(() => this.host.setTree(this.id, !this.tree)));
+			this.priorityItems(menu, thread);
+			menu.addSeparator();
 			menu.addItem((i) =>
 				i
 					.setTitle('Delete thread')
@@ -203,7 +211,7 @@ export class ThreadCard {
 					.setWarning(true)
 					.onClick(() => this.confirmDeleteThread()),
 			);
-			menu.showAtMouseEvent(e);
+			showMenu(menu, e);
 		});
 	}
 
@@ -278,7 +286,7 @@ export class ThreadCard {
 			e.preventDefault();
 			e.stopPropagation();
 			window.getSelection()?.removeAllRanges();
-			this.commentMenu(c, isRoot).showAtMouseEvent(e);
+			showMenu(this.commentMenu(c, isRoot), e);
 		};
 		row.addEventListener('dblclick', openMenu);
 		row.addEventListener('contextmenu', openMenu);
@@ -367,6 +375,7 @@ export class ThreadCard {
 				.onClick(() => void navigator.clipboard.writeText(c.body).then(() => new Notice('Comment copied'))),
 		);
 		menu.addItem((i) => i.setTitle('Go to the commented text').setIcon('locate').onClick(() => this.host.goTo(this.id)));
+		if (t) this.priorityItems(menu, t);
 		menu.addSeparator();
 		if (t) menu.addItem((i) => i.setTitle(t.resolved ? 'Re-open thread' : 'Resolve thread').setIcon(t.resolved ? 'rotate-ccw' : 'check').onClick(() => this.host.resolve(this.id, !t.resolved)));
 		menu.addItem((i) =>
@@ -377,6 +386,22 @@ export class ThreadCard {
 				.onClick(() => (isRoot ? this.confirmDeleteThread() : this.host.deleteComment(this.id, c.id))),
 		);
 		return menu;
+	}
+
+	/** "Priority" choices for the thread, as a checked group. */
+	private priorityItems(menu: Menu, thread: Thread): void {
+		const current = threadPriority(thread);
+		menu.addSeparator();
+		for (const p of PRIORITIES) {
+			menu.addItem((i) =>
+				i
+					.setTitle(`${PRIORITY_LABELS[p]} priority`)
+					.setChecked(p === current)
+					.onClick(() => {
+						if (p !== current) this.host.setPriority(this.id, p);
+					}),
+			);
+		}
 	}
 
 	private renderFooter(thread: Thread, state: CardState): void {

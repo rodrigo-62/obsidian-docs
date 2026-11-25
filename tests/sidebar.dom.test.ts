@@ -53,19 +53,26 @@ describe('comment search', () => {
 		const status = () => el.querySelector<HTMLElement>('.folio-sidebar-search-status')!;
 		const ids = () => Array.from(el.querySelectorAll('.folio-card')).map((e) => e.getAttribute('data-folio-id'));
 
+		const frame = () => new Promise((r) => requestAnimationFrame(r));
 		input.value = 'NOTE';
 		input.dispatchEvent(new Event('input'));
 		expect(ids()).toEqual(['a', 'd']);
-		expect(status().textContent).toBe('2 threads');
+		await frame();
+		expect(status().textContent).toBe('2 matches in 2 threads');
 
-		const enter = (shift = false) => input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', shiftKey: shift }));
+		const enter = async (shift = false) => {
+			input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', shiftKey: shift }));
+			await frame();
+		};
 		const active = () => cm.state.field(folioField).ui.activeId;
-		enter();
+		await enter();
 		expect(active()).toBe('a');
 		expect(cm.state.sliceDoc(cm.state.selection.main.from, cm.state.selection.main.to)).toBe('one');
-		enter();
+		expect(status().textContent).toBe('1 / 2 in 2 threads');
+		await enter();
 		expect(active()).toBe('d');
-		enter(true);
+		expect(status().textContent).toBe('2 / 2 in 2 threads');
+		await enter(true);
 		expect(active()).toBe('a');
 
 		input.value = 'zzz';

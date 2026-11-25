@@ -81,6 +81,25 @@ body.theme-dark {
 	font-size: var(--font-ui-smaller);
 	color: var(--text-faint);
 }
+.folio-priority-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	color: var(--text-muted);
+}
+.folio-priority-chip .folio-priority-icon {
+	display: inline-flex;
+}
+.folio-priority-chip .folio-priority-icon svg {
+	width: 1em;
+	height: 1em;
+}
+.folio-priority-chip[data-priority='high'] {
+	color: var(--color-orange);
+}
+.folio-priority-chip[data-priority='critical'] {
+	color: var(--color-red);
+}
 .folio-btn.is-disabled {
 	opacity: 0.5;
 	pointer-events: none;

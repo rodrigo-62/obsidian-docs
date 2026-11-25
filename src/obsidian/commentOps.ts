@@ -6,7 +6,7 @@ import { Transaction } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { inlineCommentStore as store } from '../core/commentStore';
 import { planAnchorInsertion } from '../core/markers';
-import { addReply, deleteComment, editComment, nowIso, setResolved, type Thread, type Threads } from '../core/model';
+import { addReply, deleteComment, editComment, nowIso, setPriority, setResolved, type Priority, type Thread, type Threads } from '../core/model';
 import { applyChanges, type Change } from '../core/threadStore';
 import { flashThread, folioField, folioInternal, setActive, setDraft, type Draft } from './cm/state';
 
@@ -58,7 +58,7 @@ export function cancelDraft(view: EditorView): void {
 }
 
 /** Create a thread from the current draft (or the given range). Returns the new id. */
-export function createComment(view: EditorView, body: string, range?: Draft): string | null {
+export function createComment(view: EditorView, body: string, range?: Draft, priority: Priority = 'normal'): string | null {
 	const st = view.state.field(folioField, false);
 	const r = range ?? st?.ui.draft;
 	if (!st || !r) return null;
@@ -67,7 +67,7 @@ export function createComment(view: EditorView, body: string, range?: Draft): st
 		return null;
 	}
 	const md = view.state.doc.toString();
-	const res = store.create(md, r.from, r.to, body.trim(), st.doc, nowIso());
+	const res = store.create(md, r.from, r.to, body.trim(), st.doc, nowIso(), priority);
 	if (!res.ok) {
 		new Notice(`Docs: ${res.error}`);
 		return null;
@@ -103,6 +103,7 @@ export const ops = {
 	deleteComment: (view: EditorView, id: string, commentId: string) => updateThread(view, id, (t) => deleteComment(t, commentId)),
 	deleteThread: (view: EditorView, id: string) => updateThread(view, id, () => null),
 	resolve: (view: EditorView, id: string, resolved: boolean) => updateThread(view, id, (t) => setResolved(t, resolved)),
+	setPriority: (view: EditorView, id: string, priority: Priority) => updateThread(view, id, (t) => setPriority(t, priority)),
 };
 
 /** Same operations for a note that is not open in an editor. */

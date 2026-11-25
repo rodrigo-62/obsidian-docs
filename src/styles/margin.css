@@ -122,6 +122,34 @@
 	background: rgba(var(--color-orange-rgb), 0.15);
 	color: var(--color-orange);
 }
+/* Priority (DECISIONS F9.3): a badge, and a coloured left edge for high and critical. */
+.folio-priority-badge.is-low {
+	color: var(--text-faint);
+}
+.folio-priority-badge.is-high {
+	background: rgba(var(--color-orange-rgb), 0.15);
+	color: var(--color-orange);
+}
+.folio-priority-badge.is-critical {
+	background: rgba(var(--color-red-rgb), 0.15);
+	color: var(--color-red);
+	font-weight: var(--font-semibold);
+}
+.folio-card.folio-priority-high,
+.folio-card.folio-priority-critical {
+	border-left-width: 3px;
+	padding-left: 8px;
+}
+.folio-card.folio-priority-high,
+.folio-card.folio-priority-high:hover,
+.folio-card.folio-priority-high.is-active {
+	border-left-color: var(--color-orange);
+}
+.folio-card.folio-priority-critical,
+.folio-card.folio-priority-critical:hover,
+.folio-card.folio-priority-critical.is-active {
+	border-left-color: var(--color-red);
+}
 .folio-card-actions {
 	display: flex;
 	gap: 0;
@@ -315,6 +343,9 @@
 .folio-card .folio-composer-hint {
 	display: none;
 }
+.folio-card .folio-priority-chip {
+	margin-right: auto;
+}
 .folio-card .folio-composer-input {
 	font-size: 1em;
 }
@@ -369,6 +400,11 @@
 	background-color: var(--text-highlight-bg, var(--highlight-background, rgba(255, 208, 0, 0.4)));
 	color: var(--text-normal);
 }
+/* the match Enter / Shift+Enter went to */
+::highlight(folio-comment-search-current) {
+	background-color: rgba(var(--color-orange-rgb), 0.45);
+	color: var(--text-normal);
+}
 .folio-sidebar-title {
 	font-weight: var(--font-semibold);
 	overflow: hidden;
@@ -389,6 +425,10 @@
 	flex-direction: column;
 	gap: 8px;
 	padding: 10px;
+}
+/* room to scroll the last matches up to where the eye is, not the bottom edge */
+.folio-sidebar.is-searching .folio-sidebar-list {
+	padding-bottom: 50vh;
 }
 .folio-sidebar-list .folio-detached-header {
 	margin-top: 6px;

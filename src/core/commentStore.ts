@@ -13,7 +13,7 @@ import {
 	planRepair,
 	type MarkerParse,
 } from './markers';
-import { createThread, nowIso, orderThreads, type Threads } from './model';
+import { createThread, nowIso, orderThreads, setPriority, type Priority, type Threads } from './model';
 import { parseThreads, planThreadWrite, type Change, type ThreadBlock } from './threadStore';
 
 export interface DocComments {
@@ -34,7 +34,7 @@ export type CreateResult = { ok: true; id: string; changes: Change[]; textFrom: 
 export interface CommentStore {
 	read(md: string): DocComments;
 	/** Create a thread on [from, to) with a first comment. */
-	create(md: string, from: number, to: number, body: string, doc?: DocComments, now?: string): CreateResult;
+	create(md: string, from: number, to: number, body: string, doc?: DocComments, now?: string, priority?: Priority): CreateResult;
 	/** Write the given thread set (refreshing cached quotes and repairing damaged markers). */
 	write(md: string, threads: Threads, doc?: DocComments): Change[];
 	/** Delete a thread and its anchor markers. */
@@ -79,14 +79,14 @@ function sortChanges(changes: Change[]): Change[] {
 export const inlineCommentStore: CommentStore = {
 	read,
 
-	create(md, from, to, body, doc = read(md), now = nowIso()) {
+	create(md, from, to, body, doc = read(md), now = nowIso(), priority = 'normal') {
 		if (!doc.ok) return { ok: false, error: doc.error ?? 'Thread data is damaged.' };
 		const taken = new Set([...Object.keys(doc.threads), ...doc.markers.markers.map((m) => m.id)]);
 		const id = generateId(taken);
 		const plan = planAnchorInsertion(md, from, to, id, doc.markers);
 		if (!plan.ok) return plan;
 		const threads = withFreshQuotes(md, { ...doc.threads }, doc.markers);
-		threads[id] = createThread(plan.quote, body, now);
+		threads[id] = setPriority(createThread(plan.quote, body, now), priority);
 		const changes = sortChanges([...plan.changes, ...planThreadWrite(md, threads, doc.block)]);
 		return { ok: true, id, changes, textFrom: plan.textFrom, textTo: plan.textTo };
 	},

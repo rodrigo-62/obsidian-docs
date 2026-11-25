@@ -4,7 +4,7 @@
 
 import { codeAndFrontmatterRanges, fencedCodeRanges, frontmatterRange, inlineCodeRanges, inRanges, mergeRanges, type Range } from './mdScan';
 import { parseMarkers, type Anchor, type Marker } from './markers';
-import { commentsInTimeOrder, type Thread, type Threads } from './model';
+import { commentsInTimeOrder, threadPriority, type Thread, type Threads } from './model';
 import { findThreadBlock } from './threadStore';
 
 export type ExportMode = 'full' | 'comments' | 'text';
@@ -545,12 +545,18 @@ export function exportForLLM(markdown: string, threads: Threads, options: Export
 
 	// --- Comments section -------------------------------------------------
 	const commentLines: string[] = [];
+	let hasPriority = false;
 	if (mode !== 'text' && numbered.length) {
 		for (const nb of numbered) {
 			const t = nb.thread;
 			const anchorTextRaw = nb.anchor ? md.slice(nb.anchor.textFrom, nb.anchor.textTo) : t.quote;
 			const anchorPlain = nb.anchor ? stripAll(anchorTextRaw) : t.quote;
 			const attrs = [`id="c${nb.n}"`, `status="${t.resolved ? 'resolved' : 'open'}"`];
+			const priority = threadPriority(t);
+			if (priority !== 'normal') {
+				attrs.push(`priority="${priority}"`);
+				hasPriority = true;
+			}
 			if (!nb.anchor) attrs.push('detached="true"');
 			const multiline = anchorPlain.includes('\n');
 			if (!multiline) attrs.push(`anchor="${escapeAttr(anchorPlain)}"`);
@@ -587,6 +593,7 @@ export function exportForLLM(markdown: string, threads: Threads, options: Export
 				: 'Threads follow the document. Inside a thread, comments are in time order; reply-to names the earlier comment being answered when it is not the one directly above.',
 		);
 		notation.push('status is open or resolved.' + (detachedCount ? ' detached="true" means the commented text was deleted; the anchor is the last known quote.' : ''));
+		if (hasPriority) notation.push('priority is how important the author rated a thread: low, high or critical. Threads without it are of normal priority.');
 	}
 	const notationBlock = notation.length ? `<notation>\n${notation.join('\n')}\n</notation>\n` : '';
 

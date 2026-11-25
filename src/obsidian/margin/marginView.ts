@@ -12,6 +12,7 @@ import type { Thread } from '../../core/model';
 import { folioField, setActive, setHover, type FolioState } from '../cm/state';
 import { cancelDraft, createComment, ops, revealThread } from '../commentOps';
 import { createComposer } from '../composer';
+import { isMenuOpen } from '../menus';
 import { ThreadCard, type CardHost } from './card';
 
 /** What the margin needs from the plugin. */
@@ -116,6 +117,7 @@ class MarginPlugin implements PluginValue {
 			deleteComment: (id, cid) => ops.deleteComment(v, id, cid),
 			deleteThread: (id) => ops.deleteThread(v, id),
 			resolve: (id, r) => ops.resolve(v, id, r),
+			setPriority: (id, p) => ops.setPriority(v, id, p),
 			activate: (id) => revealThread(v, id, { select: true }),
 			goTo: (id) => revealThread(v, id, { select: true, center: true }),
 			hover: (id) => {
@@ -241,8 +243,9 @@ class MarginPlugin implements PluginValue {
 			submitLabel: 'Comment',
 			autofocus: true,
 			app: this.ctx()?.app,
-			onSubmit: (text) => {
-				createComment(this.view, text);
+			priority: 'normal',
+			onSubmit: (text, { priority }) => {
+				createComment(this.view, text, undefined, priority);
 			},
 			onCancel: () => {
 				cancelDraft(this.view);
@@ -252,7 +255,8 @@ class MarginPlugin implements PluginValue {
 		// An empty draft disappears when focus leaves it (as in Google Docs).
 		comp.textarea.addEventListener('blur', () => {
 			window.setTimeout(() => {
-				if (this.draftEl && !this.draftEl.contains(activeDocument.activeElement) && comp.textarea.value.trim() === '') cancelDraft(this.view);
+				// (not while its priority menu is open)
+				if (this.draftEl && !isMenuOpen() && !this.draftEl.contains(activeDocument.activeElement) && comp.textarea.value.trim() === '') cancelDraft(this.view);
 			}, 150);
 		});
 		this.draftEl = el;

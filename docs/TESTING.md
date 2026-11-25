@@ -170,3 +170,11 @@ Make the Obsidian window wide (≥ 1100 px editor pane). Open *Essays/Sample ess
 - [ ] Comments sidebar: type **ship** in *Search comments*. Only "Light and Distance" is listed, with "ship" highlighted. Enter / Shift+Enter step through the matching threads and select their text; Esc clears.
 - [ ] Search **Find** with *Show resolved* off: "No comments match" plus "1 more in resolved threads"; clicking that shows it.
 - [ ] Select a word in the note, run **Docs: Search comments**: the sidebar opens with that word searched.
+
+## Comment box, search, priority, menus (F9)
+
+- [ ] In a reply or new comment, select a word and press **Ctrl+B**: the word gets `**` in the comment; the note doesn't change. Ctrl+Z undoes it. Ctrl+I and Ctrl+K work the same way.
+- [ ] Comment search: search a word that is deep in a long comment and press Enter. The match is highlighted in orange and scrolled into view in the sidebar and in the margin card. The count reads "1 / N in M threads".
+- [ ] New comment: the box has a "⚑ Normal" chip; choose **Critical**, save. The card shows a red "Critical" badge and a red left edge. Right-click a comment → "High priority": an orange badge and edge. "Normal priority" removes them (and the `priority` field from the note).
+- [ ] An older note without priorities looks and works as before.
+- [ ] Right-click a comment three times in different places: only one menu is open.

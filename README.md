@@ -10,10 +10,12 @@ A "Google Docs mode" for [Obsidian](https://obsidian.md): **margin comments** wi
 - Select text and add a comment. It appears as a card in the right margin, level with the text, as in Google Docs. The commented text is highlighted; overlapping comments look darker.
 - Reply to the thread, or to any single comment. A reply to an earlier comment shows a small "↳ re:" chip, and a thread can be switched to a **tree view** with nested replies.
 - Edit, delete, resolve (✓) and re-open. Resolved threads are hidden until you choose *Show resolved*.
+- Give a thread a **priority** (Low, Normal, High, Critical) when you create it or from its menu; high and critical threads are marked in colour.
+- In the comment box, Ctrl+B, Ctrl+I and Ctrl+K format the comment (your own hotkeys for bold, italic, link, strikethrough, highlight and code work too).
 - Comment bodies are Markdown; `---` on its own line becomes a separator.
 - If the commented text is deleted, the thread is kept under "Detached comments".
 - Narrow pane? Comments move to a **Comments sidebar**. Reading view highlights commented text too.
-- **Search comments** in the sidebar (or with *Docs: Search comments*): it lists the threads whose comments contain a word and steps through them with Enter. The editor's own find (Ctrl+F) searches only the note's text, never the stored comments, and Replace never changes them.
+- **Search comments** in the sidebar (or with *Docs: Search comments*): it lists the threads whose comments contain a word, highlights every match, and Enter steps from match to match, scrolling each into view. The editor's own find (Ctrl+F) searches only the note's text, never the stored comments, and Replace never changes them.
 - Double-click or right-click a comment for a menu (reply, edit, copy, go to text, resolve, delete).
 
 **Page view** (per note, turned on with *Docs: Toggle doc mode*, or created with *Docs: Create new doc*)
@@ -37,7 +39,7 @@ A "Google Docs mode" for [Obsidian](https://obsidian.md): **margin comments** wi
 </document>
 
 <comments>
-<thread id="c2" status="open" anchor="Light and Distance">
+<thread id="c2" status="open" priority="high" anchor="Light and Distance">
   <comment id="c2.1" date="2026-11-05 15:41">The opening could say more directly why distance matters at sea.</comment>
   <comment id="c2.3" reply-to="c2.1" date="2026-11-13 17:15">"a coastline that is obvious by day disappears at night" could be the first sentence.</comment>
 </thread>

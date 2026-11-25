@@ -582,7 +582,8 @@ export default class FolioPlugin extends Plugin {
 		new ComposerModal(this.app, 'Add comment', quote.length > 300 ? quote.slice(0, 300) + '…' : quote, {
 			placeholder: 'Comment…',
 			submitLabel: 'Comment',
-			onSubmit: (text) => createComment(cm, text, draft),
+			priority: 'normal',
+			onSubmit: (text, { priority }) => createComment(cm, text, draft, priority),
 			onCancel: () => cancelDraft(cm),
 		}).open();
 	}
